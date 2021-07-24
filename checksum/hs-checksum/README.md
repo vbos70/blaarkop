@@ -1,7 +1,7 @@
-# checksum
+# hs-checksum
 
 
-## examples
+## Build and use examples
 
 Build:
 
@@ -10,15 +10,19 @@ Build:
 	
 Command line usage:
 
-    stack exec checksum-exe < ../bin-packets/generated_packets_100M.bin 
+    stack exec hs-checksum-exe < src/Lib.hs # or any other input file
 
 Timing the program:
 
-    /usr/bin/time  stack exec checksum-exe < ../bin-packets/generated_packets_100M.bin 
+    /usr/bin/time stack exec hs-checksum-exe < src/Lib.hs 
+    time stack exec hs-checksum-exe < src/Lib.hs 
 	
 Profiling the program:
 
-    stack exec --profile -- checksum-exe < ../bin-packets/generated_packets_100M.bin +RTS -p
+    stack exec --profile -- hs-checksum-exe < src/Lib.hs +RTS -p
 
-This saves the profile to: ./checksum-exe.prof
+This saves the profile to: ./hs-checksum-exe.prof:
+
+    cat hs-checksum-exe.prof
+
 
