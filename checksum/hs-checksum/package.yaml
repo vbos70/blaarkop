@@ -1,0 +1,51 @@
+name:                hs-checksum
+version:             0.1.0.0
+github:              "vbos70/blaarkop"
+license:             BSD3
+author:              "Victor Bos"
+maintainer:          "victor.bos@gmail.com"
+copyright:           "2021 Victor Bos"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/vbos70/blaarkop/checksum#README.md>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - bytestring
+
+executables:
+  hs-checksum-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - hs-checksum
+    - bytestring
+    
+tests:
+  hs-checksum-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - hs-checksum
