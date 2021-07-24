@@ -10,16 +10,16 @@ Build:
 	
 Command line usage:
 
-    stack exec hs-checksum-exe < src/Lib.hs # or any other input file
+    stack exec hs-checksum-exe < ../../LICENSE # or any other input file
 
 Timing the program:
 
-    /usr/bin/time stack exec hs-checksum-exe < src/Lib.hs 
-    time stack exec hs-checksum-exe < src/Lib.hs 
+    /usr/bin/time stack exec hs-checksum-exe < ../../LICENSE  
+    time stack exec hs-checksum-exe < ../../LICENSE 
 	
 Profiling the program:
 
-    stack exec --profile -- hs-checksum-exe < src/Lib.hs +RTS -p
+    stack exec --profile -- hs-checksum-exe < ../../LICENSE  +RTS -p
 
 This saves the profile to: ./hs-checksum-exe.prof:
 

@@ -36,5 +36,9 @@ Execute programs
     $ stack exec my-project-name-exe
 	$ stack exec --profile -- my-project-name-exe +RTS -p
 	
+## Python project
 
+Note: The Python code in this repository is written for *Python 3*.
 
+    $ mkdir my_project_name  # a new directory for each project
+    $ cd my_project_name
