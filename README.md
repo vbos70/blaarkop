@@ -19,6 +19,14 @@ Time a program:
     $ /usr/bin/time programename < inputfile # GNU time
     $ time programename < inputfile          # shell's built-in time
 
+
+### C projects
+
+    $ mkdir my_project_name  # a new directory for each project
+	
+Next, create a Makefile in the new directory and write the C source
+code.
+
 ### Haskell projects
 
 Create a new project with stack:
