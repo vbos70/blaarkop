@@ -12,6 +12,14 @@ https://nl.wikipedia.org/wiki/Blaarkop.
 
 ## Generic instructions
 
+### Git
+
+Push commits:
+
+    $ git push
+
+This assumes you have read/write privileges at the remote repository.
+
 ### Linux
 
 Time a program:
