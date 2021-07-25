@@ -19,4 +19,4 @@ blmean.o : blmean.c
 	cc -O2 -Wall -c blmean.c
 
 clean :
-	rm *.o *.hi blmean_lowlevel blmeanc
+	rm *.o *.hi blmean_lowlevel blmeanc report
