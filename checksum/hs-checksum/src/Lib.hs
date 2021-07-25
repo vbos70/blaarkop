@@ -6,12 +6,12 @@ module Lib
       
     ) where
 
-import qualified Data.ByteString
+import qualified Data.ByteString.Lazy as B
 import Data.Bits
-import Data.Int
+--import Data.Int
 import Data.Word
 
-type ByteString = Data.ByteString.ByteString
+type ByteString = B.ByteString
 
 -- CRC computation uses strict pairs instead of lazy tuples. This
 -- gives much better performance. The idea is from
@@ -33,8 +33,8 @@ showCRC (CRC crc0 crc1) = (hexDigits crc0) ++ " " ++ (hexDigits crc1)
 -- well as foldl' which is strict in its accumulator
 computeCRC :: ByteString -> CRC
 computeCRC bs = foldl fcrc (CRC 0 0) bs
-  where foldl = Data.ByteString.foldl'
-        pack = Data.ByteString.pack
+  where foldl = B.foldl'
+        pack = B.pack
         fcrc :: CRC -> Word8 -> CRC
         fcrc (CRC crc0 crc1) b = CRC (b + crc0) ((b `shiftL` 1) + crc1 + crc0)
   -- Note: crc0' = crc0 + b

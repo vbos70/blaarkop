@@ -19,6 +19,11 @@ Time a program:
     $ /usr/bin/time programename < inputfile # GNU time
     $ time programename < inputfile          # shell's built-in time
 
+Generate 100M of random bytes:
+
+    $ cat /dev/urandom | head -c 100M > log100M.bin
+
+See man head for syntax of the argument of *head -c*.
 
 ### C projects
 

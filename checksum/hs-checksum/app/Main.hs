@@ -1,9 +1,9 @@
 module Main where
 
 import Lib
-import qualified Data.ByteString
+import qualified Data.ByteString.Lazy as B
 
-readInput = Data.ByteString.getContents
+readInput = B.getContents
 
 main :: IO ()
 main = do
