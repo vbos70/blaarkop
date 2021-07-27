@@ -1,14 +1,43 @@
 # Blaarkop
 
-This reposiory contains programming examples.
+This repository contains programming examples.
 
 About the name: *Blaarkop* is a Dutch breed of dairy cattle, see
 https://en.wikipedia.org/wiki/Blaarkop or in Dutch
-https://nl.wikipedia.org/wiki/Blaarkop.
+https://nl.wikipedia.org/wiki/Blaarkop. Blaarkop are not known to have
+programming skills.
 
 ## Checksum
 
+The *checksum* example contains different implementations of a
+checksum algorithm. The specification of the algorithm is:
 
+    input: byte[0..n)
+
+    crc0 = 0
+    crc1 = 0
+    for b <- byte[0..n) do
+        crc0 = (crc0 + b) mod 256
+        crc1 = (crc1 + crc0 + b) mod 256
+
+    output: (crc0, crc1)
+
+Given an input sequence of `n` bytes, `byte[0], byte[1], ...,
+byte[n-1]`, the algorithm computes an output of two bytes `crc0` and
+`crc1`.
+
+The goal of the example is to compare different implementations:
+
+- speed,
+- memory usage,
+- readability
+
+## Big List Mean
+
+The *blmean* example contains programs to compute the mean of a big
+list of 64-bits real numbers. The examples are taken from
+https://donsbot.wordpress.com/2008/06/04/haskell-as-fast-as-c-working-at-a-high-altitude-for-low-level-performance/. The
+goal of the example is to understand and verify that blog post.
 
 ## Generic instructions
 
