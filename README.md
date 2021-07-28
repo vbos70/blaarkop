@@ -9,8 +9,10 @@ programming skills.
 
 ## Checksum
 
-The *checksum* example contains different implementations of a
-checksum algorithm. The specification of the algorithm is:
+The *checksum* example contains different implementations of the
+Fletcher algorithm as described here:
+https://datatracker.ietf.org/doc/html/rfc1145.  The specification of
+the algorithm is:
 
     input: byte[0..n)
 
@@ -18,13 +20,16 @@ checksum algorithm. The specification of the algorithm is:
     crc1 = 0
     for b <- byte[0..n) do
         crc0 = (crc0 + b) mod 256
-        crc1 = (crc1 + crc0 + b) mod 256
+        crc1 = (crc1 + crc0) mod 256
 
     output: (crc0, crc1)
 
 Given an input sequence of `n` bytes, `byte[0], byte[1], ...,
 byte[n-1]`, the algorithm computes an output of two bytes `crc0` and
 `crc1`.
+
+Note: by forcing `crc0` and `crc1` to be single byte variables, the
+`mod 256` operations can be removed.
 
 The goal of the example is to compare different implementations:
 

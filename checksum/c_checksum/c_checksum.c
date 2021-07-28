@@ -12,7 +12,7 @@ unsigned int compute_CRC(void)
 
   while((b = getchar()) != EOF) {
     crc0 += b;
-    crc1 += crc0 + b;
+    crc1 += crc0;
   }
   return ((crc0 & 0xFF) << 8) + (crc1 & 0xFF);  
 }

@@ -34,13 +34,7 @@ showCRC (CRC crc0 crc1) = (hexDigits crc0) ++ " " ++ (hexDigits crc1)
 computeCRC :: ByteString -> CRC
 computeCRC bs = foldl fcrc (CRC 0 0) bs
   where foldl = B.foldl'
-        pack = B.pack
         fcrc :: CRC -> Word8 -> CRC
-        fcrc (CRC crc0 crc1) b = CRC (b + crc0) ((b `shiftL` 1) + crc1 + crc0)
-  -- Note: crc0' = crc0 + b
-  --       crc1' = crc1 + crc0' + b
-  --             = crc1 + (crc0 + b) + b
-  --             = crc1 + crc0 + 2*b
-  --             = crc1 + crc0 + (b << 1)
-  --                                `shiftL` is <<
+        fcrc (CRC crc0 crc1) b = let crc0' = crc0 + b
+                                 in CRC crc0' (crc1 + crc0')
 
