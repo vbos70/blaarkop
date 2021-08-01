@@ -21,6 +21,10 @@ import System.Environment
 -- arguments.
 data P a b = P !a !b
 
+-- foldr or foldr' leads to building up a large summation in memory
+-- before it can be reduced to a the answer (a Double). Therefore, for
+-- large m, (mean 1 m) exhausts memory resources.
+
 foldr' g z n m | n > m = z
                | otherwise = z `seq` (n `g` (foldr' g z (n+1) m))
 
