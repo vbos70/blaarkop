@@ -9,7 +9,7 @@ all : report
 
 ARG ?= 1e9
 
-report : blmeanc_report blmean_lowlevel_report blmean_highlevel1_report blmean_highlevel2_report blmean_highlevel3_report
+report : blmeanc_report blmean_lowlevel_report blmean_highlevel1_report blmean_highlevel2_report blmean_highlevel3_report blmean_py_report
 
 blmeanc_report : blmeanc
 	echo  '# c' > report
@@ -42,6 +42,13 @@ blmean_lowlevel_report : blmean_lowlevel
 
 blmean_lowlevel : blmean_lowlevel.hs
 	ghc -O2 blmean_lowlevel.hs --make
+
+blmean_py_report : blmean_py
+	echo  '# py' >> report
+	/usr/bin/time python3 ./blmean.py $(ARG) >> report
+
+blmean_py : blmean.py
+
 
 blmeanc : blmean.o
 	cc -O2 -Wall -o blmeanc blmean.o
