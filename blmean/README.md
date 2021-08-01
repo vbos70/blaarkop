@@ -30,3 +30,28 @@ target:
 	rm *.o *.hi blmean_lowlevel blmeanc report
 
 
+## Analysis
+
+Tp compute the mean of a list [1 ..n], we can use a formula, instead
+of looping throug the list of numbers.
+
+Example:
+
+
+    1 + 2 + 3 + 4    == 10
+	4 + 3 + 2 + 1    == 10
+	-------------- +    -- +
+	5 + 5 + 5 + 5    == 20   == (4 * (4+1)) / 2
+
+
+    1 + 2 + 3 + 4 + 5   == 15
+	4 + 3 + 2 + 1 + 5   == 15
+	----------------- +    -- +
+	5 + 5 + 5 + 5 + 10  == 30   == (5 * (5+1)) / 2 
+
+In general:
+	
+	sum [1..n] == n*(n+1) / 2
+	
+See https://brilliant.org/wiki/formula-sum-_-i1-n-i-sum-_-i1-n-i-2-sum-_-i1-n-i-3/
+	
