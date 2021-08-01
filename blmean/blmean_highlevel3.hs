@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts #-}
 -- blmean: compute the mean value of a big list of Doubles.
 --
 -- The code is based on:
@@ -14,6 +15,7 @@
 
 import Text.Printf
 import System.Environment
+import Data.List
 
 -- As mentioned in the blog post, Haskell's tuples are lazy data types
 -- and therefore not suitable here. Instead, we define our own data
@@ -21,9 +23,9 @@ import System.Environment
 -- arguments.
 data P a b = P !a !b
 
-foldl' g z n m | n > m = z
-               | otherwise = foldl' g z1 (n+1) m
-  where z1 = z `seq` n `seq` (z `g` n)
+--foldl' g z n m | n > m = z
+--              | otherwise = z1 `seq` (foldl' g z1 (n+1) m)
+--  where z1 = (z `g` n)
 
 
 -- foldr + z [a1 .. an ] = foldr + (a1 + z) [a2 an]
@@ -41,12 +43,11 @@ foldl' g z n m | n > m = z
 mean :: Double -> Double -> Double
 mean n m = s / fromIntegral l
   where
-    P s l = foldl' k (P 0 0) n m
-    k (P s l) a = P (s+a) (l+1) -- here the strict pair data type
-                                -- keeps memory usage small
--- If normal list generation is uses, as in
---    P s l = foldl k (P 0 0) [n .. m]
--- then the runtime performance is much worse (but memory use is the same).
+    (P s l) = sumlen [n .. m]
+
+--sumlen [] = 0
+sumlen = foldl' f (P 0 0)
+  where f (P s n) x = s `seq` n `seq` (P (s+x)  (n+1))
 
 main = do
   [d] <- map read `fmap` getArgs

@@ -8,7 +8,7 @@ all : report
 
 ARG ?= 1e9
 
-report : blmeanc_report blmean_lowlevel_report blmean_highlevel1_report
+report : blmeanc_report blmean_lowlevel_report blmean_highlevel1_report blmean_highlevel2_report
 
 blmeanc_report : blmeanc
 	echo  '# c' > report
@@ -20,6 +20,20 @@ blmean_highlevel1_report : blmean_highlevel1
 
 blmean_highlevel1 : blmean_highlevel1.hs
 	ghc -O2 blmean_highlevel1.hs --make
+
+blmean_highlevel2_report : blmean_highlevel2
+	echo  '# hs highlevel2' >> report
+	/usr/bin/time ./blmean_highlevel2 $(ARG) >> report
+
+blmean_highlevel2 : blmean_highlevel2.hs
+	ghc -O2 blmean_highlevel2.hs --make
+
+blmean_highlevel3_report : blmean_highlevel3
+	echo  '# hs highlevel3' >> report
+	/usr/bin/time ./blmean_highlevel3 $(ARG) >> report
+
+blmean_highlevel3 : blmean_highlevel3.hs
+	ghc -O2 blmean_highlevel3.hs --make
 
 blmean_lowlevel_report : blmean_lowlevel
 	echo  '# hs lowlevel' >> report
@@ -35,4 +49,4 @@ blmean.o : blmean.c
 	cc -O2 -Wall -c blmean.c
 
 clean :
-	rm *.o *.hi blmean_lowlevel blmean_highlevel1 blmeanc report
+	rm *.o *.hi blmean_lowlevel blmean_highlevel1 blmean_highlevel2  blmean_highlevel3 blmeanc report
