@@ -10,13 +10,13 @@ blmean_highlevel1_report : blmean_highlevel1
 	/usr/bin/time ./blmean_highlevel1 1e9 >> report
 
 blmean_highlevel1 : blmean_highlevel1.hs
-	ghc -O2 blmean_highlevel1.hs -optc-O2 --make
+	ghc -O2 blmean_highlevel1.hs --make
 
 blmean_lowlevel_report : blmean_lowlevel
 	/usr/bin/time ./blmean_lowlevel 1e9 >> report
 
 blmean_lowlevel : blmean_lowlevel.hs
-	ghc -O2 blmean_lowlevel.hs -optc-O2 --make
+	ghc -O2 blmean_lowlevel.hs --make
 
 blmeanc : blmean.o
 	cc -O2 -Wall -o blmeanc blmean.o
