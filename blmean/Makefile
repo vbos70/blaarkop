@@ -1,5 +1,6 @@
 # Usage:
 #     make
+#     make -k        # keep going after errors
 #     make clean
 #     ARG=1e7 make   # specifies input value to blmean programs
 
@@ -8,7 +9,7 @@ all : report
 
 ARG ?= 1e9
 
-report : blmeanc_report blmean_lowlevel_report blmean_highlevel1_report blmean_highlevel2_report
+report : blmeanc_report blmean_lowlevel_report blmean_highlevel1_report blmean_highlevel2_report blmean_highlevel3_report
 
 blmeanc_report : blmeanc
 	echo  '# c' > report
