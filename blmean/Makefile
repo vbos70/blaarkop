@@ -1,19 +1,29 @@
+# Usage:
+#     make
+#     make clean
+#     ARG=1e7 make   # specifies input value to blmean programs
+
 all : report
 	cat report
+
+ARG ?= 1e9
 
 report : blmeanc_report blmean_lowlevel_report blmean_highlevel1_report
 
 blmeanc_report : blmeanc
-	/usr/bin/time ./blmeanc 1e9 > report
+	echo  '# c' > report
+	/usr/bin/time ./blmeanc $(ARG) >> report
 
 blmean_highlevel1_report : blmean_highlevel1
-	/usr/bin/time ./blmean_highlevel1 1e9 >> report
+	echo  '# hs highlevel1' >> report
+	/usr/bin/time ./blmean_highlevel1 $(ARG) >> report
 
 blmean_highlevel1 : blmean_highlevel1.hs
 	ghc -O2 blmean_highlevel1.hs --make
 
 blmean_lowlevel_report : blmean_lowlevel
-	/usr/bin/time ./blmean_lowlevel 1e9 >> report
+	echo  '# hs lowlevel' >> report
+	/usr/bin/time ./blmean_lowlevel $(ARG) >> report
 
 blmean_lowlevel : blmean_lowlevel.hs
 	ghc -O2 blmean_lowlevel.hs --make
