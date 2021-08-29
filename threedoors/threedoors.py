@@ -10,7 +10,15 @@ import random as R
 # choice or to switch to the remaining closed door. What is the best
 # choice, assuming you would like to have the car?
 
-DOORS = {1,2,3}
+# The number of doors, N, can be set here. In the original TV show,
+# there were 3 doors, but any other number N > 3 can be chosen. After
+# the first door is picked, the quiz master opens N-2 doors behind
+# which there is no car. The switch strategy now means to take the
+# only remaining closed door.
+num_doors = 3
+
+
+DOORS = {d for d in range (num_doors)}
 
 def pick(door_set):
     # set.pop() is not really random, so these lines do not work:
@@ -21,27 +29,29 @@ def pick(door_set):
     d = R.choice(tuple(door_set))
     return d
 
-def stick(door1, qm_door):
+def stick(door1, qm_doors):
     # Stick to door1
     return door1
 
-def switch(door1, qm_door):
+def switch(door1, qm_doors):
     # pick the door that is neither door1 nor qm_door
-    return pick(DOORS - {door1, qm_door})
+    return pick((DOORS - {door1}) - qm_doors)
 
 def round(strategy):
-    assert DOORS == {1,2,3}
     car_door = pick(DOORS)
     door1 = pick(DOORS)
     other_doors = DOORS - {door1}
-    qm_door = pick(other_doors - {car_door})
-    chosen_door = strategy(door1, qm_door)
+    qm_doors = set()
+    for i in range(num_doors-2):
+        qm_door = pick((other_doors - {car_door}) - qm_doors)
+        qm_doors.add(qm_door)
+    chosen_door = strategy(door1, qm_doors)
     return 1 if chosen_door == car_door else 0
 
 def run_rounds(num_rounds):
     n = num_rounds
     num_stick_success = sum(round(stick) for n in range(n))
-    num_switch_success = num_rounds - num_stick_success 
+    num_switch_success = sum(round(switch) for n in range(n))
     return (num_stick_success, num_switch_success)
 
 

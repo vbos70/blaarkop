@@ -44,6 +44,12 @@ list of 64-bits real numbers. The examples are taken from
 https://donsbot.wordpress.com/2008/06/04/haskell-as-fast-as-c-working-at-a-high-altitude-for-low-level-performance/. The
 goal of the example is to understand and verify that blog post.
 
+
+## Three Doors Problem
+
+The ` threedoors` folder contains a simulation program that shows the
+solution to the Three Doors problem.
+
 ## Generic instructions
 
 ### Git
