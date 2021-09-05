@@ -50,6 +50,13 @@ goal of the example is to understand and verify that blog post.
 The ` threedoors` folder contains a simulation program that shows the
 solution to the Three Doors problem.
 
+## Probability
+
+The probability directory contains worked out examples following the
+book "Introduction to Probability" by Joseph K. Blitzstein and Jessica
+Hwang, CRC Press, September 2015
+(https://www.routledge.com/Introduction-to-Probability-Second-Edition/Blitzstein-Hwang/p/book/9781138369917).
+
 ## Generic instructions
 
 ### Git
