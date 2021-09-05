@@ -47,4 +47,5 @@ at_least_one_winter_girl = { e for e in E
 
 comment('''Compute the probability that both children are girls, given that at
 least one of the two is a girl who was born in winter.''')
-print(f'P(both_girls | at_least_one_winter_girl) = {E.CP(both_girls, at_least_one_winter_girl):}')
+print(f'P(both_girls | at_least_one_winter_girl) = '
+      f'{E.CP(both_girls, at_least_one_winter_girl):}')
