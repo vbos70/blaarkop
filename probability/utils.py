@@ -2,42 +2,35 @@
 from fractions import Fraction
 
 
-class Universe:
-    '''A Universe object is a generic (finite) sample space. It provides
-    functions to compute probabilities of elements belonging to a
-    subset of the Universe.
+class Universe(set):
+    '''A Universe object is set representing a generic (finite) sample
+    space. In addition to set functions, it provides functions to
+    compute probabilities of elements belonging to a subset of the
+    Universe.
 
     '''
 
     def __init__(self, S: set):
-        self.S = S
-
-        
-    def __iter__(self):
-        return iter(self.S)
-
-    
-    def __len__(self):
-        return len(self.S)
+        super().__init__(S)
 
     
     def P(self, s: set) -> Fraction:
         '''Returns the probability of an "s"-element, when randomly picking an
         element from this Universe. 
 
-        Pre: s <= self.S
+        Pre: s <= self
 
         The probability is computed as the Fraction of the number of
         elements in s and the total of elements in this Universe.
 
         '''
-        return Fraction(len(s), len(self.S))
+        return Fraction(len(s), len(self))
 
     
     def CP(self, s: set, c: set) -> Fraction:
         '''Returns the conditional probability of s given c. 
 
-        Pre: s <= self.S and c <= self.S
+        Pre: s <= self and c <= self
 
         The conditional probability is computed according to
         Definition 2.2.1 (Conditional probability).
