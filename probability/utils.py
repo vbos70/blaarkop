@@ -1,6 +1,8 @@
 # Generic functions
 from fractions import Fraction
 
+def comment(msg):
+    print("# " + ("\n# ".join(msg.splitlines())))
 
 class Universe(set):
     '''A Universe object is set representing a generic (finite) sample
