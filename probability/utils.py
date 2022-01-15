@@ -4,39 +4,34 @@ from fractions import Fraction
 def comment(msg):
     print("# " + ("\n# ".join(msg.splitlines())))
 
-class Universe(set):
-    '''A Universe object is set representing a generic (finite) sample
-    space. In addition to set functions, it provides functions to
-    compute probabilities of elements belonging to a subset of the
-    Universe.
 
+def prob(E: set, S: set) -> Fraction:
+    '''Return the probability of event E in the universe S.
+
+    Assumption: E and S are sets and E is a sub-set of S.
+
+        E: set The event modelled as a subset of S.
+
+        S: set The universe of all events.
     '''
+    if len(S) == 0:
+        return Fraction(0, 1)
+    return Fraction(len(E), len(S))
 
-    def __init__(self, S: set):
-        super().__init__(S)
 
-    
-    def P(self, s: set) -> Fraction:
-        '''Returns the probability of an "s"-element, when randomly picking an
-        element from this Universe. 
+def cprob(E: set, C: set, S: set) -> Fraction:
+    '''Return the probability of event E conditioned on C in the universe S.
 
-        Pre: s <= self
+    Assumption: E, C, and S are sets and both E and C are sub-sets of S.
 
-        The probability is computed as the Fraction of the number of
-        elements in s and the total of elements in this Universe.
+        E: set The event modelled as a subset of S.
 
-        '''
-        return Fraction(len(s), len(self))
+        C: set The condition-event modelled as a subset of S.
 
-    
-    def CP(self, s: set, c: set) -> Fraction:
-        '''Returns the conditional probability of s given c. 
-
-        Pre: s <= self and c <= self
-
-        The conditional probability is computed according to
-        Definition 2.2.1 (Conditional probability).
-
-        '''
-        return self.P(s & c) / self.P(c)
+        S: set The universe of all events.
+    '''
+    pc = prob(C, S)
+    if pc == 0:
+        return Fraction(0, 1)
+    return prob(E & C, S) / prob(C, S)
 
