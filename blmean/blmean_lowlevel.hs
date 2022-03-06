@@ -16,7 +16,9 @@ import Text.Printf
 import System.Environment
 
 mean :: Double -> Double -> Double
-mean n m = go 0 0 n
+mean n m
+  | m > 0     = go 0 0 n
+  | otherwise = 0.0
   where
     go :: Double -> Int -> Double -> Double
     go s l x | x > m      = s / fromIntegral l

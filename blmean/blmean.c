@@ -14,7 +14,12 @@ int main(int argc, char **argv) {
        n <= d;
        b+=n, n++, a++);
 
-  printf("%f\n", b / a);
-
+  if (d > 0) {
+    printf("%f\n", b / a);
+  }
+  else {
+    printf("0.0\n");
+  }
+      
   return 0;
 }
