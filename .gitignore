@@ -1,3 +1,5 @@
 *~
 
 /probability/.dir-locals.el
+
+stack.yaml.lock
