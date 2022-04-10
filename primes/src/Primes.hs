@@ -1,7 +1,9 @@
 module Primes where
 
+-- Infinite (?) list of all primes
+-- Note: it isn't infinite, because it computes only primes <= maxBound :: Int
 primes :: [Int]
-primes = [1 .. ] -- to be refactored later
+primes = sieve [2 .. ]
 
 -- Implementation of the sieve of Eratosthenes
 sieve :: [Int] -> [Int]
