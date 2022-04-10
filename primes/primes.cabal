@@ -55,4 +55,5 @@ test-suite primes-test
   build-depends:
       base >=4.7 && <5
     , primes
+    , QuickCheck
   default-language: Haskell2010
