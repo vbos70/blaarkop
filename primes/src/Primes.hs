@@ -6,8 +6,8 @@ upperBound = 10000 :: Int
 -- Determine if a number is prime.
 isPrime :: Int -> Maybe Bool
 isPrime n | n < 2  = Nothing
-          | n < upperBound = Just (n `elem` primes)
-          | otherwise = Nothing
+          | n >= upperBound = Nothing
+          | otherwise = Just (n `elem` primes)
 
 -- List of all primes less than upperBound
 primes :: [Int]
