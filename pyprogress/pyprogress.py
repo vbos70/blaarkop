@@ -3,7 +3,16 @@
 import sys
 
 
-def progress(count, total, prefix='', postfix=''):
+def clear(num_chr_clear: int):
+    '''Clears the current line by writing `num_chr_clear` spaces followed
+    by a \r character.
+    '''
+    if num_chr_clear>0:
+        sys.stdout.write('%s\r' % (' '*num_chr_clear, ))
+        sys.stdout.flush()
+        
+    
+def progress(count, total, prefix='', postfix='', num_chr_clear=0):
     '''Updates sys.stdout with the next line of the progress animation.
 
     count: int current share of the total prpgress.
@@ -18,6 +27,8 @@ def progress(count, total, prefix='', postfix=''):
 
     As an example how to use this function, see progress_demo().
     '''
+    clear(num_chr_clear)
+    
     bar_len = 60
     filled_len = int(round(bar_len * count / float(total)))
 
@@ -44,9 +55,7 @@ def busy(sym, prefix='', postfix='', num_chr_clear=0):
 
     As an example how to use this function, see busy_demo().
     '''
-    if num_chr_clear>0:
-        sys.stdout.write('%s\r' % (' '*num_chr_clear, ))
-        sys.stdout.flush()
+    clear(num_chr_clear)
     
     line = '%s[%s]%s\r' % (prefix, sym, postfix)
     sys.stdout.write(line)
@@ -78,7 +87,7 @@ class SpeedoMeter:
     def speed_str(self, speed):
         return "%.3f" % speed if speed is not None else "--"
 
-    
+
     def progress(self, count, total, prefix='', postfix='', num_chr_clear=0):
         '''Updates sys.stdout with the next line of the progress animation.
 
@@ -95,19 +104,13 @@ class SpeedoMeter:
         As an example how to use this function, see progress_demo().
         '''
         speed = self.measure_speed(count)
-        if num_chr_clear>0:
-            sys.stdout.write('%s\r' % (' '*num_chr_clear, ))
-            sys.stdout.flush()
-
+        clear(num_chr_clear)        
         return progress(count, total, prefix=prefix, postfix=" [speed: %s %s/s]%s" % (self.speed_str(speed), self.label, postfix))
         
 
     def busy(self, count, sym, prefix='', postfix='', num_chr_clear=0):
-        speed = self.measure_speed(count)        
-        if num_chr_clear>0:
-            sys.stdout.write('%s\r' % (' '*num_chr_clear, ))
-            sys.stdout.flush()
-
+        speed = self.measure_speed(count)
+        clear(num_chr_clear)
         return busy(sym, prefix=prefix, postfix=" [speed: %s %s/s]%s" % (self.speed_str(speed), self.label, postfix))
         
         
