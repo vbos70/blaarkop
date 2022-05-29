@@ -1,5 +1,8 @@
 *~
-
+*.hi
+*.o
 /probability/.dir-locals.el
-
 stack.yaml.lock
+rpi/haskell/helloworld/helloworld
+rpi/haskell/input_output/input_output
+rpi/haskell/primes/primes
