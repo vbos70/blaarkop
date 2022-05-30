@@ -3,3 +3,9 @@
 /probability/.dir-locals.el
 
 stack.yaml.lock
+/fpearls/*.hi
+/fpearls/*.o
+/fpearls/minfree0
+/fpearls/minfree1
+/fpearls/minfree2
+
