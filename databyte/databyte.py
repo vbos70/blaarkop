@@ -12,6 +12,12 @@ class RawDataBytes(object):
         self.rawbytes = rawbytes
         self.field = field
 
+        for f in self.field:
+            setattr(RawDataBytes, f, property(lambda self, f=f: self.__getitem__(f),
+                                              lambda self, v, f=f: self.__setitem__(f, v),
+                                              None,
+                                              f'Field {f}: loc={self.field[f]}'))
+
     def __getitem__(self, k: str):
         if isinstance(k, slice):
             return self.rawbytes[k]
@@ -68,5 +74,34 @@ def test_setitem():
 
     db['ds'] = ba(200,201,202)
     assert db['ds'] == bytearray([200,201,202])
-    assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])    
+
+    assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])
     
+
+def test_field_access():
+
+    db = make_db()
+
+    assert db.a == bytearray([0])
+    assert db.b == bytearray([1,2])
+    assert db.cs == bytearray([3,5,7,9])
+    assert db.ds == bytearray([4,6,8])
+
+
+def test_field_assignment():
+
+    db = make_db()
+
+    db.a = ba(100)
+    assert db.a == bytearray([100])
+
+    db.b = ba(13,14)
+    assert db.b == bytearray([13,14])
+
+    db.cs = ba(20,30,40,50)
+    assert db.cs == bytearray([20,30,40,50])
+
+    db.ds = ba(200,201,202)
+    assert db.ds == bytearray([200,201,202])
+
+    assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])    
