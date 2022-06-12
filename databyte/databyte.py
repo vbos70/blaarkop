@@ -51,7 +51,7 @@ class RawDataBytes(object):
             else:
                 wd,loc = self._field[k]
                 field_idx = list(range(len(self._rawbytes)))[loc]
-                repeat = (loc.stop-loc.start) // loc.step
+                repeat = (loc.stop-loc.start+loc.step-1) // loc.step
                 return list(self._rawbytes[i:i+wd] for i in field_idx)
 
 
