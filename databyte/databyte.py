@@ -260,10 +260,12 @@ def test_multibyte_field_setitem():
     db.a = [ba(2,1,0)]
     db.b = [ba(30,40)]
 
-    assert list(db._rawbytes) == [2,1,0,30,40]
     assert db.a == [ba(2,1,0)]
     assert db.b == [ba(30,40)]
+
+    db.cs = [ba(50,60), ba(100,110), ba(150,160)]
+    db.ds = [ba(0,0,0), ba(1,1,1),ba(2,2,2)]
     
-    assert db.cs == [ba(5,6),ba(10,11), ba(15,16)]
-    assert db.ds == [ba(7,8,9), ba(12,13,14), ba(17,18,19)]
+    assert db.cs == [ba(50,60), ba(100,110), ba(150,160)]
+    assert db.ds == [ba(0,0,0), ba(1,1,1), ba(2,2,2)]
     
