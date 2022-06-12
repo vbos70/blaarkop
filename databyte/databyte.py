@@ -1,6 +1,6 @@
 import struct
 from collections import namedtuple
-from typing import Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 Field = namedtuple('Field', 'wd loc')
 # Field.format: struct format string
@@ -36,7 +36,7 @@ class RawDataBytes(object):
         return type is bytearray.
 
         If `k` is a `str`, the bytes making up the field with name `k`
-        is returned. The return type is bytearray.
+        is returned. The return type is List[bytearray].
 
         Otherwise, an IndexError is raised.
 
@@ -46,16 +46,13 @@ class RawDataBytes(object):
         elif isinstance(k, slice):
             return self._rawbytes[k]
         else:
-            if self._field[k].wd == 1:
-                return self._rawbytes[self._field[k].loc]
-            else:
-                wd,loc = self._field[k]
-                field_idx = list(range(len(self._rawbytes)))[loc]
-                repeat = (loc.stop-loc.start+loc.step-1) // loc.step
-                return list(self._rawbytes[i:i+wd] for i in field_idx)
+            wd,loc = self._field[k]
+            field_idx = list(range(len(self._rawbytes)))[loc]
+            repeat = (loc.stop-loc.start+loc.step-1) // loc.step
+            return list(self._rawbytes[i:i+wd] for i in field_idx)
 
 
-    def __setitem__(self, k: Union[int, slice, str], xs: Union[int, bytearray]):
+    def __setitem__(self, k: Union[int, slice, str], xs: Union[int, List[bytearray]]):
         '''Sets self[k] to xs
 
         If `k` is an `int` in the range(0,len(self)), then
@@ -65,7 +62,7 @@ class RawDataBytes(object):
         then `self._rawbytes[k]` is set to the bytearray `xs`.
 
         If `k` is a `str`, the bytes making up the field with name `k`
-        is set to the bytearray `xs`.
+        is set to the List[bytearray] `xs`.
 
         Otherwise, an IndexError is raised.
 
@@ -75,18 +72,15 @@ class RawDataBytes(object):
         elif isinstance(k, slice):
             self._rawbytes[k] = xs
         else:
-            if self._field[k].wd == 1:
-                self._rawbytes[self._field[k].loc] = xs
-            else:
-                wd,loc = self._field[k]
-                repeat = (loc.stop-loc.start+loc.step-1) // loc.step
-                if len(xs) != repeat:
-                    raise ValueError(f"Incorrect number of values in assignment to Field {k}, expected {repeat}, found {len(xs)}.")
-                for i in range(repeat):
-                    if wd != len(xs[i]):
-                        raise ValueError(f"Incorrect number of bytes in assignment to Field {k}[{i}], expected {wd}, found {len(xs[i])}.")
-                    idx = loc.start + i*loc.step
-                    self._rawbytes[idx:idx+wd] = xs[i]
+            wd,loc = self._field[k]
+            repeat = (loc.stop-loc.start+loc.step-1) // loc.step
+            if len(xs) != repeat:
+                raise ValueError(f"Incorrect number of values in assignment to Field {k}, expected {repeat}, found {len(xs)}.")
+            for i in range(repeat):
+                if wd != len(xs[i]):
+                    raise ValueError(f"Incorrect number of bytes in assignment to Field {k}[{i}], expected {wd}, found {len(xs[i])}.")
+                idx = loc.start + i*loc.step
+                self._rawbytes[idx:idx+wd] = xs[i]
 
 
 ################################################################################
@@ -139,10 +133,10 @@ def make_db2():
 
 def test_getitem():
     db = make_db()
-    assert db['a'] == bytearray([0])
-    assert db['b'] == bytearray([1,2])
-    assert db['cs'] == bytearray([3,5,7,9])
-    assert db['ds'] == bytearray([4,6,8])
+    assert db['a'] == [bytearray([0])]
+    assert db['b'] == [bytearray([1]), bytearray([2])]
+    assert db['cs'] == list(bytearray([i]) for i in [3,5,7,9])
+    assert db['ds'] == list(bytearray([i]) for i in [4,6,8])
 
 def test_getitem_index():
     db = make_db()
@@ -196,20 +190,20 @@ def test_setitem_slice_ValueError():
 def test_setitem():
     db = make_db()
 
-    db['a'] = ba(100)
-    assert db['a'] == bytearray([100])
+    db['a'] = [ba(100)]
+    assert db['a'] == [bytearray([100])]
     assert db[:] == bytearray([100,1,2,3,4,5,6,7,8,9])
 
-    db['b'] = ba(13,14)
-    assert db['b'] == bytearray([13,14])
+    db['b'] = [ba(13), ba(14)]
+    assert db['b'] == list(bytearray([i]) for i in [13,14])
     assert db[:] == bytearray([100,13,14,3,4,5,6,7,8,9])
     
-    db['cs'] = ba(20,30,40,50)
-    assert db['cs'] == bytearray([20,30,40,50])
+    db['cs'] = list(ba(i) for i in [20,30,40,50])
+    assert db['cs'] == list(ba(i) for i in [20,30,40,50])
     assert db[:] == bytearray([100,13,14,20,4,30,6,40,8,50])    
 
-    db['ds'] = ba(200,201,202)
-    assert db['ds'] == bytearray([200,201,202])
+    db['ds'] = list(ba(i) for i in [200,201,202])
+    assert db['ds'] == list(ba(i) for i in [200,201,202])
 
     assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])
     
@@ -218,29 +212,29 @@ def test_field_access():
 
     db = make_db()
 
-    assert db.a == bytearray([0])
-    assert db.b == bytearray([1,2])
-    assert db.cs == bytearray([3,5,7,9])
-    assert db.ds == bytearray([4,6,8])
+    assert db.a == [bytearray([0])]
+    assert db.b == list(ba(i) for i in [1,2])
+    assert db.cs == list(ba(i) for i in [3,5,7,9])
+    assert db.ds == list(ba(i) for i in [4,6,8])
 
 
 def test_field_assignment():
 
     db = make_db()
 
-    db.a = ba(100)
-    assert db.a == bytearray([100])
+    db.a = [ba(100)]
+    assert db.a == [bytearray([100])]
 
-    db.b = ba(13,14)
-    assert db.b == bytearray([13,14])
+    db.b = list(ba(i) for i in [13,14])
+    assert db.b == list(ba(i) for i in [13,14])
 
-    db.cs = ba(20,30,40,50)
-    assert db.cs == bytearray([20,30,40,50])
+    db.cs = list(ba(i) for i in [20,30,40,50])
+    assert db.cs == list(ba(i) for i in [20,30,40,50])
 
-    db.ds = ba(200,201,202)
-    assert db.ds == bytearray([200,201,202])
+    db.ds = list( ba(i) for i in [200,201,202])
+    assert db.ds == list( ba(i) for i in [200,201,202])
 
-    assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])    
+    assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])
 
 
 def test_multibyte_field():
