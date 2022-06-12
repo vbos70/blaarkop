@@ -23,6 +23,9 @@ class RawDataBytes(object):
                 None,
                 f'Field {f}: wd={self._field[f].wd}, loc={self._field[f].loc}'))
 
+    def __str__(self):
+        return ":".join(f"{f}={[list(i) for i in self[f]]}" for f in self._field)
+
     def __getitem__(self, k: Union[int, slice, str]) -> Union[int, bytearray]:
         '''Returns self[k]
 
@@ -46,10 +49,10 @@ class RawDataBytes(object):
             if self._field[k].wd == 1:
                 return self._rawbytes[self._field[k].loc]
             else:
-                loc = self._field[k].loc
-                field_idx = list(range(len(self._rawbytes)))[self._field[k].loc]
+                wd,loc = self._field[k]
+                field_idx = list(range(len(self._rawbytes)))[loc]
                 repeat = (loc.stop-loc.start) // loc.step
-                return list(self._rawbytes[i:i+self._field[k].wd] for i in field_idx)
+                return list(self._rawbytes[i:i+wd] for i in field_idx)
 
 
     def __setitem__(self, k: Union[int, slice, str], xs: Union[int, bytearray]):
@@ -72,7 +75,18 @@ class RawDataBytes(object):
         elif isinstance(k, slice):
             self._rawbytes[k] = xs
         else:
-            self._rawbytes[self._field[k].loc] = xs
+            if self._field[k].wd == 1:
+                self._rawbytes[self._field[k].loc] = xs
+            else:
+                wd,loc = self._field[k]
+                repeat = (loc.stop-loc.start+loc.step-1) // loc.step
+                if len(xs) != repeat:
+                    raise ValueError(f"Incorrect number of values in assignment to Field {k}, expected {repeat}, found {len(xs)}.")
+                for i in range(repeat):
+                    if wd != len(xs[i]):
+                        raise ValueError(f"Incorrect number of bytes in assignment to Field {k}[{i}], expected {wd}, found {len(xs[i])}.")
+                    idx = loc.start + i*loc.step
+                    self._rawbytes[idx:idx+wd] = xs[i]
 
 
 ################################################################################
@@ -232,13 +246,24 @@ def test_field_assignment():
 def test_multibyte_field():
     db = make_db2()
 
-
-    l = list(range(10))
-    l1 = list(l[0:0+4])
-    assert l1 == [0,1,2,3]
-    
     assert db.a == [ba(0,1,2)]
     assert db.b == [ba(3,4)]
 
     assert db.cs == [ba(5,6),ba(10,11), ba(15,16)]
     assert db.ds == [ba(7,8,9), ba(12,13,14), ba(17,18,19)]
+
+def test_multibyte_field_setitem():
+    db = make_db2()
+
+    assert db.a == [ba(0,1,2)]
+    assert db.b == [ba(3,4)]
+    db.a = [ba(2,1,0)]
+    db.b = [ba(30,40)]
+
+    assert list(db._rawbytes) == [2,1,0,30,40]
+    assert db.a == [ba(2,1,0)]
+    assert db.b == [ba(30,40)]
+    
+    assert db.cs == [ba(5,6),ba(10,11), ba(15,16)]
+    assert db.ds == [ba(7,8,9), ba(12,13,14), ba(17,18,19)]
+    
