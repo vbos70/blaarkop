@@ -43,7 +43,14 @@ class RawDataBytes(object):
         elif isinstance(k, slice):
             return self._rawbytes[k]
         else:
-            return self._rawbytes[self._field[k].loc]
+            if self._field[k].wd == 1:
+                return self._rawbytes[self._field[k].loc]
+            else:
+                loc = self._field[k].loc
+                field_idx = list(range(len(self._rawbytes)))[self._field[k].loc]
+                repeat = (loc.stop-loc.start) // loc.step
+                return list(self._rawbytes[i:i+self._field[k].wd] for i in field_idx)
+
 
     def __setitem__(self, k: Union[int, slice, str], xs: Union[int, bytearray]):
         '''Sets self[k] to xs
@@ -98,6 +105,21 @@ def make_db():
                        'b': Field(wd=1, loc=slice(1,3,1)),
                        'cs': Field(wd=1, loc=slice(3,10,2)),
                        'ds': Field(wd=1, loc=slice(4,10,2))
+                       })
+
+Group = namedtuple('Group', 'offset length repeat')
+def total_length(g):
+    return g.length * g.repeat
+
+def make_db2():
+    g0 = Group(offset=0, length=5, repeat=1)
+    g1 = Group(offset=total_length(g0), length=5, repeat=3)
+
+    return RawDataBytes(bytearray(list(range(total_length(g0) + total_length(g1)))),
+                      {'a': Field(wd=3, loc=slice(g0.offset+0, g0.offset+total_length(g0), g0.length)),
+                       'b': Field(wd=2, loc=slice(g0.offset+3, g0.offset+total_length(g0), g0.length)),
+                       'cs': Field(wd=2, loc=slice(g1.offset+0, g1.offset+total_length(g1), g1.length)),
+                       'ds': Field(wd=3, loc=slice(g1.offset+2, g1.offset+total_length(g1), g1.length))
                        })
 
 
@@ -205,3 +227,18 @@ def test_field_assignment():
     assert db.ds == bytearray([200,201,202])
 
     assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])    
+
+
+def test_multibyte_field():
+    db = make_db2()
+
+
+    l = list(range(10))
+    l1 = list(l[0:0+4])
+    assert l1 == [0,1,2,3]
+    
+    assert db.a == [ba(0,1,2)]
+    assert db.b == [ba(3,4)]
+
+    assert db.cs == [ba(5,6),ba(10,11), ba(15,16)]
+    assert db.ds == [ba(7,8,9), ba(12,13,14), ba(17,18,19)]
