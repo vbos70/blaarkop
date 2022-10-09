@@ -82,7 +82,6 @@ class RawDataBytes(object):
                 idx = loc.start + i*loc.step
                 self._rawbytes[idx:idx+wd] = xs[i]
 
-
 ################################################################################
 #
 # pytest unit test functions
@@ -109,10 +108,10 @@ def ba(*args):
 
 def make_db():
     return RawDataBytes(bytearray([0,1,2,3,4,5,6,7,8,9]),
-                      {'a': Field(wd=1, loc=slice(0,1,1)),
-                       'b': Field(wd=1, loc=slice(1,3,1)),
-                       'cs': Field(wd=1, loc=slice(3,10,2)),
-                       'ds': Field(wd=1, loc=slice(4,10,2))
+                      {'a': Field(wd=1, loc=slice(0,1,1)),   # 1 byte at position 0 
+                       'b': Field(wd=1, loc=slice(1,3,1)),   # 2 bytes at positions 1,2
+                       'cs': Field(wd=1, loc=slice(3,10,2)), # 4 bytes at positions 3,5,7,9
+                       'ds': Field(wd=1, loc=slice(4,10,2))  # 3 bytes at positions 4,6,8
                        })
 
 Group = namedtuple('Group', 'offset length repeat')
@@ -249,16 +248,34 @@ def test_multibyte_field():
 def test_multibyte_field_setitem():
     db = make_db2()
 
+    expected = list(range(20))
+    assert db[:] == bytearray(expected)
+    
     assert db.a == [ba(0,1,2)]
     assert db.b == [ba(3,4)]
+    
     db.a = [ba(2,1,0)]
-    db.b = [ba(30,40)]
+    expected[0:3] = [2,1,0]
+    assert db[:] == bytearray(expected)
 
+    db.b = [ba(30,40)]
+    expected[3:5] = [30,40]
+    assert db[:] == bytearray(expected)
+    
     assert db.a == [ba(2,1,0)]
     assert db.b == [ba(30,40)]
 
     db.cs = [ba(50,60), ba(100,110), ba(150,160)]
+    expected[5:7] = [50,60]
+    expected[10:12] = [100,110]
+    expected[15:17] = [150,160]
+    assert db[:] == bytearray(expected)
+    
     db.ds = [ba(0,0,0), ba(1,1,1),ba(2,2,2)]
+    expected[7:10] = [0,0,0]
+    expected[12:15] = [1,1,1]
+    expected[17:20] = [2,2,2]
+    assert db[:] == bytearray(expected)
     
     assert db.cs == [ba(50,60), ba(100,110), ba(150,160)]
     assert db.ds == [ba(0,0,0), ba(1,1,1), ba(2,2,2)]
