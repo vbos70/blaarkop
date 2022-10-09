@@ -12,3 +12,8 @@ stack.yaml.lock
 rpi/haskell/helloworld/helloworld
 rpi/haskell/input_output/input_output
 rpi/haskell/primes/primes
+interactive/pyenv
+iterators/.mypy_cache
+pyenv
+/*/py38
+/*/__pycache__
