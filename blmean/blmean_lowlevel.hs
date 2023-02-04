@@ -12,8 +12,8 @@
 -- This is called a "low level" version with a recursive definition of
 -- the mean function.
 
-import Text.Printf
-import System.Environment
+import Text.Printf ( printf )
+import System.Environment ( getArgs )
 
 mean :: Double -> Double -> Double
 mean n m
@@ -26,4 +26,4 @@ mean n m
 
 main = do
   [d] <- map read `fmap` getArgs
-  printf "%f\n" (mean 1 d)
+  printf "The mean is %f\n" (mean 1 d)
