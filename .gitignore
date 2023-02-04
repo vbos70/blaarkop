@@ -17,3 +17,4 @@ iterators/.mypy_cache
 pyenv
 /*/py38
 /*/__pycache__
+blmean/blmean_lowlevel.exe
