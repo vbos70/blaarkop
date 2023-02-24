@@ -110,3 +110,7 @@ Note: The Python code in this repository is written for *Python 3*.
 
     $ mkdir my_project_name  # a new directory for each project
     $ cd my_project_name
+
+## WSL
+
+Here we give some hints for WSL usage.
