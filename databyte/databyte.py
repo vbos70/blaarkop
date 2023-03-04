@@ -245,6 +245,9 @@ def test_multibyte_field():
     assert db.cs == [ba(5,6),ba(10,11), ba(15,16)]
     assert db.ds == [ba(7,8,9), ba(12,13,14), ba(17,18,19)]
 
+    db.cs[0] = ba(20,20)
+    assert db.cs == [ba(20,20),ba(10,11), ba(15,16)]
+    
 def test_multibyte_field_setitem():
     db = make_db2()
 
