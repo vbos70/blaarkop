@@ -1,7 +1,7 @@
 module Primes where
 
 -- Upper bound for primes check
-upperBound = 10000 :: Int
+upperBound = 100000 :: Int
 
 -- Determine if a number is prime.
 isPrime :: Int -> Maybe Bool
