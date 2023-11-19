@@ -8,7 +8,7 @@ data ProcessGraph =
     | Seq ProcessGraph ProcessGraph
     | Alt ProcessGraph ProcessGraph
     | Mrg ProcessGraph ProcessGraph
-    | LMr ProcessGraph ProcessGraph
+    | Lmr ProcessGraph ProcessGraph
     | Cmr ProcessGraph ProcessGraph
     deriving (Show, Eq, Ord)
 
