@@ -119,7 +119,7 @@ def test_proving():
     assert p.is_complete()
 
     p1 = Proof(A, 2 * 3 -2 * C/2 + C)
-    p1 += 2 * 3 -2 * C/2 + C, eq_A, eq_B
+    p1 += 2 * 3 - 2 * C/2 + C, eq_A, eq_B
     assert p1.is_complete()
     print(p1.theorem())
 
