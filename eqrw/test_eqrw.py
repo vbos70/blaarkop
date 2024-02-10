@@ -110,8 +110,8 @@ def test_proving():
     eq_B = B == 3 - C/2
 
     p = Proof(A, 6)
-    p += 2 * B + C, eq_A
-    p += 2 * (3 - C/2) + C, eq_B
+    p += 2 * B + C,             eq_A
+    p += 2 * (3 - C/2) + C,     eq_B
     assert not p.is_complete()
     p += 2 * 3 - 2 * C/2 + C
     p += 6 - C + C
@@ -139,3 +139,29 @@ def test_proving():
     print(p1)
 
 test_proving()
+
+def test_summary():
+    x = Real('x')
+    y = Real('y')
+    A, B, C = Reals('A B C')
+
+    eq_A = A == 2 * B + C
+    eq_B = B == 3 - C/2
+
+    p = Proof(A, 6)
+    p += 2 * B + C,             eq_A
+    p += 2 * (3 - C/2) + C,     eq_B
+    assert not p.is_complete()
+    print(f'summary of {p.theorem()}')
+    print(p.summary())
+    print()
+
+    p += 2 * 3 - 2 * C/2 + C
+    p += 6 - C + C
+    p += 6
+    assert p.is_complete()
+    print(f'summary of {p.theorem()}')
+    print(p.summary())
+    print()
+    
+test_summary()

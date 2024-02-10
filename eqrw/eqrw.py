@@ -107,4 +107,18 @@ class Proof:
             result.append(f'== {rs if len(rs)>0 else ""}')
             result.append(f'   {t1}')
         return "\n".join(result)
+    
+    def equations(self):
+        return set(eq for rs in self.eqs for eq in rs)
 
+    def summary(self):
+        result = []
+        result += [f'   {self.lhs()}']
+        if self.is_complete():
+            result.append(f'== [{len(self.eqs)} steps, {len(self.equations())} equations]')
+        else:
+            result.append(f'== [{len(self.eqs)} steps, {len(self.equations())} equations]')
+            result.append(f'   {self.ts[-1]}')
+            result.append(f'??')
+        result.append(f'   {self.rhs()}')
+        return "\n".join(result)
