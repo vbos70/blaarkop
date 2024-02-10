@@ -37,6 +37,9 @@ class Proof:
     def last(self):
         return self.ts[-1]
     
+    def num_steps(self):
+        return len(self.eqs)
+    
     def __iadd__(self, other):
         ''' Extends this Proof with `other`, which is assumed to be a 
         single step consisting of a target term and zero or more 
@@ -115,10 +118,13 @@ class Proof:
         result = []
         result += [f'   {self.lhs()}']
         if self.is_complete():
-            result.append(f'== [{len(self.eqs)} steps, {len(self.equations())} equations]')
+            result.append(f'== [{self.num_steps()} steps, {len(self.equations())} equations]')
         else:
-            result.append(f'== [{len(self.eqs)} steps, {len(self.equations())} equations]')
-            result.append(f'   {self.ts[-1]}')
+            if self.num_steps() > 0:
+                result.append(f'== [{self.num_steps()} steps, {len(self.equations())} equations]')                
+                result.append(f'   {self.ts[-1]}')   
+            else:
+                pass
             result.append(f'?? incomplete proof')
         result.append(f'   {self.rhs()}')
         return "\n".join(result)
