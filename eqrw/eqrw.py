@@ -119,6 +119,6 @@ class Proof:
         else:
             result.append(f'== [{len(self.eqs)} steps, {len(self.equations())} equations]')
             result.append(f'   {self.ts[-1]}')
-            result.append(f'??')
+            result.append(f'?? incomplete proof')
         result.append(f'   {self.rhs()}')
         return "\n".join(result)
