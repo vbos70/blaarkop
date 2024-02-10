@@ -54,6 +54,21 @@ def test_Proof_last():
 
 test_Proof_last()
 
+
+def test_num_steps():
+    i, j, k = Ints('i j k')
+    p = Proof(i, k)
+    assert p.num_steps() == 0
+
+    p += j, i == j
+    assert p.num_steps() == 1
+
+    p += k, j == k
+    assert p.num_steps() == 2
+    
+test_num_steps()
+
+
 IV = IntVal
 
 def test_Proof__iadd__():
