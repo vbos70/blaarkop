@@ -1,6 +1,47 @@
 from z3 import *
 from eqrw import *
+from traceback import print_exception
 
+num_tests = 0
+num_failed_tests = 0
+test_output = []
+suppress_test_output = False
+
+def test_print(*args):
+    global suppress_test_output
+    if not suppress_test_output:
+        test_output.extend(list(str(a) for a in args))
+
+def test(func):
+
+    def inner():
+        global num_tests
+        global num_failed_tests
+        global test_output
+        print(f'# Test {func.__name__}: ', end='', flush=True)
+        try:            
+            test_output = []
+            num_tests += 1
+            func()
+            print(f'passed.')
+            if len(test_output)>0:
+                print("Test output:\n" + "\n".join(test_output))
+        except AssertionError as ae:
+            num_failed_tests += 1
+            print(f'Failed:')
+            print_exception(ae, limit=-1)
+    return inner
+
+def test_summary():
+    global num_tests
+    global num_failed_tests
+    return f'# Tests: {num_tests}. Passed: {num_tests-num_failed_tests}. Failed: {num_failed_tests}.'        
+
+suppress_test_output = True
+
+
+
+@test
 def test_prove():
     i, j = Ints('i j')
     eq1 = i == j + 100
@@ -11,14 +52,16 @@ def test_prove():
 
 test_prove()
 
+@test
 def test_Proof__init__():
     i, j = Ints('i j')
     p = Proof(i, j)
     assert p.eq0 == (i, j)
-    assert p.ts[0] == i
+    assert p.terms[0] == i
 
 test_Proof__init__()
 
+@test
 def test_Proof_theorem():
     i, j = Ints('i j')
     p = Proof(i, j)
@@ -26,6 +69,7 @@ def test_Proof_theorem():
 
 test_Proof_theorem()
 
+@test
 def test_Proof_lhs():
     i, j = Ints('i j')
     p = Proof(i, j)
@@ -33,6 +77,7 @@ def test_Proof_lhs():
 
 test_Proof_lhs()
 
+@test
 def test_Proof_rhs():
     i, j = Ints('i j')
     p = Proof(i, j)
@@ -40,6 +85,7 @@ def test_Proof_rhs():
 
 test_Proof_rhs()
 
+@test
 def test_Proof_first():
     i, j = Ints('i j')
     p = Proof(i, j)
@@ -47,6 +93,7 @@ def test_Proof_first():
 
 test_Proof_first()
 
+@test
 def test_Proof_last():
     i, j = Ints('i j')
     p = Proof(i, j)
@@ -54,7 +101,7 @@ def test_Proof_last():
 
 test_Proof_last()
 
-
+@test
 def test_num_steps():
     i, j, k = Ints('i j k')
     p = Proof(i, k)
@@ -71,6 +118,7 @@ test_num_steps()
 
 IV = IntVal
 
+@test
 def test_Proof__iadd__():
     i, j = Ints('i j')
     eq1 = i == j + IV(100)
@@ -89,6 +137,7 @@ def test_Proof__iadd__():
 test_Proof__iadd__()
 
 def IV(x): return x
+@test
 def test_Proof__add__():
     i, j = Ints('i j')
     eq1 = i == j + IV(100)
@@ -97,24 +146,32 @@ def test_Proof__add__():
     p1 = Proof(i, j + IV(100))
     p1 += j + IV(100), eq1
 
-    print(p1)
-    print()
+    test_print(p1)
+    test_print()
 
     p2 = Proof(j + IV(100), IV(117))
-    print(p2)
-    print()
+    test_print(p2)
+    test_print()
     p2 += IV(17) + IV(100), eq2
     p2 += IV(117)
-    print(p2)
-    print()
+    test_print(p2)
+    test_print()
 
     p3 = p1 + p2
     assert p3.theorem() == (i == IV(117)), f'Fails: {p3.theorem()} == {i == IV(117)}'
-    print(p3)
+    test_print(p3)
 test_Proof__add__()
 
 
+@test
+def test_steps():
+    i, j = Ints('i j')
+    p = Proof(i, j)
+    assert len(list(p.steps())) == 0
+test_steps()
 
+
+@test
 def test_proving():
 
     x = Real('x')
@@ -136,26 +193,27 @@ def test_proving():
     p1 = Proof(A, 2 * 3 -2 * C/2 + C)
     p1 += 2 * 3 - 2 * C/2 + C, eq_A, eq_B
     assert p1.is_complete()
-    print(p1.theorem())
+    test_print(p1.theorem())
 
     p2 = Proof(2 * 3 -2 * C/2 + C, 6)
     p2 += 6
     assert p2.is_complete()
-    print(p2.theorem())
+    test_print(p2.theorem())
 
-    print()
+    test_print()
     p = p1 + p2
-    print(p.theorem())
-    print(p)
+    test_print(p.theorem())
+    test_print(p)
 
-    print()
+    test_print()
     p1 += p2
-    print(type(p1))
-    print(p1)
+    test_print(type(p1))
+    test_print(p1)
 
 test_proving()
 
-def test_summary():
+@test
+def test_proof_summary():
     x = Real('x')
     y = Real('y')
     A, B, C = Reals('A B C')
@@ -167,16 +225,19 @@ def test_summary():
     p += 2 * B + C,             eq_A
     p += 2 * (3 - C/2) + C,     eq_B
     assert not p.is_complete()
-    print(f'summary of {p.theorem()}')
-    print(p.summary())
-    print()
+    test_print(f'summary of {p.theorem()}')
+    test_print(p.summary())
+    test_print()
 
     p += 2 * 3 - 2 * C/2 + C
     p += 6 - C + C
     p += 6
-    assert p.is_complete()
-    print(f'summary of {p.theorem()}')
-    print(p.summary())
-    print()
+    assert p.is_complete(), f'Expected proof of {p.theorem()} to be complete.'
+    test_print(f'summary of {p.theorem()}')
+    test_print(p.summary())
+    test_print()
     
-test_summary()
+test_proof_summary()
+
+print(test_summary())
+

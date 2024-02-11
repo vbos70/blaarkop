@@ -1,7 +1,4 @@
 import z3
-
-class ProofException(Exception): pass
-
 _solver = z3.Solver()
 
 def prove(formula, *eqs, solver: z3.Solver =_solver):
@@ -15,13 +12,21 @@ def prove(formula, *eqs, solver: z3.Solver =_solver):
     solver.pop()
     return result
 
+class ProofException(Exception): pass
 class Proof:
 
     def __init__(self, lhs, rhs):
         self.eq0 = (lhs, rhs)
-        self.ts = [lhs]
+        self.terms = [lhs]
         self.eqs = []
+    
+    def steps(self):
+        l = self.lhs()
+        for eqs, r in zip(self.eqs, self.terms[1:]):
+            yield (l, eqs, r)
+            l = r
 
+            
     def theorem(self):
         return self.lhs() == self.rhs()
     
@@ -32,10 +37,10 @@ class Proof:
         return self.eq0[1]
     
     def first(self):
-        return self.ts[0]
+        return self.lhs()
     
     def last(self):
-        return self.ts[-1]
+        return self.terms[-1]
     
     def num_steps(self):
         return len(self.eqs)
@@ -60,8 +65,8 @@ class Proof:
                 raise ProofException(f"First proof's final term is different from second proof's first term.")
 
             self.eq0 = (self.eq0[0], other.eq0[1])
-            for (to, eqs) in zip(other.ts[1:], other.eqs):
-                self.ts.append(to)
+            for (to, eqs) in zip(other.terms[1:], other.eqs):
+                self.terms.append(to)
                 self.eqs.append(eqs)
             return self
         
@@ -74,7 +79,7 @@ class Proof:
         to = other[0]
         rs = list(other[1:])
 
-        lhs, rhs = self.ts[0], self.ts[-1]
+        lhs, rhs = self.terms[0], self.terms[-1]
         rs.append(lhs == rhs)
         if not prove(rhs == to, *rs):
             user_rules = rs[:-1]
@@ -83,7 +88,7 @@ class Proof:
             else:
                 with_str = ''
             raise ProofException(f"Cannot prove {rhs} == {to}{with_str}")
-        self.ts.append(to)
+        self.terms.append(to)
         self.eqs.append(rs[:-1])
         return self
 
@@ -95,7 +100,7 @@ class Proof:
         if not (self.last() == other.first()):
             raise ProofException(f"First proof's last term {self.last()} is different from second proof's first term {other.first()}.")
         p = Proof(self.lhs(), other.rhs())
-        p.ts = self.ts + other.ts[1:]
+        p.terms = self.terms + other.terms[1:]
         p.eqs = self.eqs + other.eqs
         return p
     
@@ -105,8 +110,8 @@ class Proof:
     def __str__(self):
         result = [f'Theorem: {self.lhs()} == {self.rhs()}',
                   'Proof:' if self.is_complete() else 'Partial proof:']
-        result += [f'   {self.ts[0]}']
-        for (rs, t1) in zip(self.eqs, self.ts[1:]):
+        result += [f'   {self.terms[0]}']
+        for (rs, t1) in zip(self.eqs, self.terms[1:]):
             result.append(f'== {rs if len(rs)>0 else ""}')
             result.append(f'   {t1}')
         return "\n".join(result)
@@ -122,7 +127,7 @@ class Proof:
         else:
             if self.num_steps() > 0:
                 result.append(f'== [{self.num_steps()} steps, {len(self.equations())} equations]')                
-                result.append(f'   {self.ts[-1]}')   
+                result.append(f'   {self.terms[-1]}')   
             else:
                 pass
             result.append(f'?? incomplete proof')
