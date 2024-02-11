@@ -6,6 +6,7 @@ num_tests = 0
 num_failed_tests = 0
 test_output = []
 suppress_test_output = False
+named_tests = {}
 
 def test_print(*args):
     global suppress_test_output
@@ -13,6 +14,7 @@ def test_print(*args):
         test_output.extend(list(str(a) for a in args))
 
 def test(func):
+    global named_tests
 
     def inner():
         global num_tests
@@ -30,17 +32,34 @@ def test(func):
             num_failed_tests += 1
             print(f'Failed:')
             print_exception(ae, limit=-1)
+
+    named_tests[func.__name__] = inner
     return inner
 
 def test_summary():
     global num_tests
     global num_failed_tests
-    return f'# Tests: {num_tests}. Passed: {num_tests-num_failed_tests}. Failed: {num_failed_tests}.'        
-
-suppress_test_output = True
+    return f'# SUMMARY: Tests: {num_tests}. Passed: {num_tests-num_failed_tests}. Failed: {num_failed_tests}.'        
 
 
+def run_tests(*tfuncs, new_suppress_test_output = False):
+    global num_tests
+    global num_failed_tests
+    global suppress_test_output
 
+    sto = suppress_test_output
+    suppress_test_output = new_suppress_test_output
+    num_tests = 0
+    num_failed_tests = 0
+    if len(tfuncs) == 0:
+        for n in named_tests:
+            named_tests[n]()
+    else:
+        for tf in named_tests.values():
+            if tf in tfuncs:
+                tf()
+############################################
+                
 @test
 def test_prove():
     i, j = Ints('i j')
@@ -50,7 +69,6 @@ def test_prove():
 
     assert not prove(i == 117, eq1)
 
-test_prove()
 
 @test
 def test_Proof__init__():
@@ -59,7 +77,6 @@ def test_Proof__init__():
     assert p.eq0 == (i, j)
     assert p.terms[0] == i
 
-test_Proof__init__()
 
 @test
 def test_Proof_theorem():
@@ -67,7 +84,6 @@ def test_Proof_theorem():
     p = Proof(i, j)
     assert p.theorem() == (i == j)
 
-test_Proof_theorem()
 
 @test
 def test_Proof_lhs():
@@ -75,7 +91,6 @@ def test_Proof_lhs():
     p = Proof(i, j)
     assert p.lhs() == i
 
-test_Proof_lhs()
 
 @test
 def test_Proof_rhs():
@@ -83,7 +98,6 @@ def test_Proof_rhs():
     p = Proof(i, j)
     assert p.rhs() == j
 
-test_Proof_rhs()
 
 @test
 def test_Proof_first():
@@ -91,7 +105,6 @@ def test_Proof_first():
     p = Proof(i, j)
     assert p.first() == i
 
-test_Proof_first()
 
 @test
 def test_Proof_last():
@@ -99,7 +112,6 @@ def test_Proof_last():
     p = Proof(i, j)
     assert p.last() == i
 
-test_Proof_last()
 
 @test
 def test_num_steps():
@@ -113,11 +125,8 @@ def test_num_steps():
     p += k, j == k
     assert p.num_steps() == 2
     
-test_num_steps()
-
 
 IV = IntVal
-
 @test
 def test_Proof__iadd__():
     i, j = Ints('i j')
@@ -133,8 +142,6 @@ def test_Proof__iadd__():
     p2 = Proof(j + IV(100), IV(117))
     p2 += IV(17) + IV(100), eq2
     p2 += IV(117)
-
-test_Proof__iadd__()
 
 def IV(x): return x
 @test
@@ -160,7 +167,6 @@ def test_Proof__add__():
     p3 = p1 + p2
     assert p3.theorem() == (i == IV(117)), f'Fails: {p3.theorem()} == {i == IV(117)}'
     test_print(p3)
-test_Proof__add__()
 
 
 @test
@@ -172,8 +178,6 @@ def test_steps():
     assert len(list(p.steps())) == 1
     p += j, j == 10
     assert len(list(p.steps())) == 2
-
-test_steps()
 
 
 @test
@@ -215,7 +219,6 @@ def test_proving():
     test_print(type(p1))
     test_print(p1)
 
-test_proving()
 
 @test
 def test_proof_summary():
@@ -241,8 +244,11 @@ def test_proof_summary():
     test_print(f'summary of {p.theorem()}')
     test_print(p.summary())
     test_print()
-    
-test_proof_summary()
 
+
+run_tests(new_suppress_test_output=True)
+print(test_summary())
+
+run_tests(test_proof_summary, new_suppress_test_output=True)
 print(test_summary())
 
