@@ -168,6 +168,11 @@ def test_steps():
     i, j = Ints('i j')
     p = Proof(i, j)
     assert len(list(p.steps())) == 0
+    p += 10, i == 10
+    assert len(list(p.steps())) == 1
+    p += j, j == 10
+    assert len(list(p.steps())) == 2
+
 test_steps()
 
 
