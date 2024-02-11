@@ -21,6 +21,27 @@ def ex2_2_9():
     p += succ(add(succ(zero), zero)), PA2
     p += succ(succ(zero)), PA1
     assert p.is_complete()
-    test_print(p)
+    #test_print(p)
+
+@test
+def prop2_2_7():
+
+    # base case: p == zero 
+    p = Const('p', S)
+    pr_base = Proof(add(zero, p), p)
+    pr_base += add(zero, zero), p == zero
+    pr_base += zero,            PA1
+    pr_base += p,               p == zero
+    assert pr_base.is_complete()
+
+    # induction: p == succ(p0) and add(zero, p0) == p0
+    p0 = Const('p0', S)
+    pr_succ = Proof(add(zero,p), p)
+    pr_succ += add(zero, succ(p0)), p == succ(p0)
+    pr_succ += succ(add(zero, p0)), PA2
+    pr_succ += succ(p0),            add(zero, p0) == p0
+    pr_succ += p,                   p == succ(p0)
+    assert pr_succ.is_complete()
+
 
 run_tests()
