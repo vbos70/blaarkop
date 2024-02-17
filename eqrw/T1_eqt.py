@@ -22,7 +22,7 @@ class NIProof:
         self.v = v
         self.eq0 = (lhs, rhs)
         self.base = Proof(substitute(lhs, (self.v, zero)), substitute(rhs, (self.v, zero)))
-        v0 = self.v0 = Const('v0', S)
+        v0 = self.v0 = Const(str(v) + '0', S)
         self.step = Proof(substitute(lhs, (self.v, succ(v0))), substitute(rhs, (self.v, succ(v0))))
         self.ih = substitute(lhs, (self.v, v0)) == substitute(rhs, (self.v, v0))
 
