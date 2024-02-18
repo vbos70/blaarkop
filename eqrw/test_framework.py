@@ -36,6 +36,7 @@ def test(func):
             print(f'Failed:')
             print_exception(ae, limit=-1)
         except Exception as e:
+            num_failed_tests += 1
             print(f'Error:')
             print_exception(e)
 
