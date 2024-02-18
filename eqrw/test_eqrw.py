@@ -85,9 +85,40 @@ def test_num_steps():
 
     p += k, j == k
     assert p.num_steps() == 2
-    
+
 
 IV = IntVal
+
+@test
+def test_add_step():
+    i, j = Ints('i j')
+    eq1 = i == j + IV(100)
+    eq2 = j == IV(17)
+
+    p = Proof(i, j + IV(100))
+    p.add_step(eqs = [eq1],
+               target = j + IV(100))
+    
+    assert p.num_steps() == 1
+    assert p.is_complete()
+
+    p2 = Proof(j + 100, IV(117))
+    assert p2.rhs() == IV(117)
+    assert p2.last() == j + 100
+    assert not p2.last() == p2.rhs()
+    assert not p2.is_complete()
+
+    assert str(IV(17) + IV(100)) == '117'
+
+    p2 += IV(17) + IV(100), eq2
+    assert p2.rhs() == IV(117)
+    assert p2.last() == IV(17) + IV(100)
+    assert str(p2.rhs()) == '117'
+
+    p2 += 117
+    assert p2.is_complete()
+
+
 @test
 def test_Proof__iadd__():
     i, j = Ints('i j')

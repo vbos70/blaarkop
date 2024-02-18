@@ -28,7 +28,7 @@ class Equation:
     def expr(self):
         return self.lhs == self.rhs
 
-    
+
 class ProofException(Exception): pass
 class Proof:
 
@@ -58,6 +58,29 @@ class Proof:
     def num_steps(self):
         return len(self.eqs)
     
+    def add_step(self, eqs, target):
+        ''' Extends this Proof by proving `target` from `self.last()`
+        by applying the given equations in `eqs`.
+
+        If `target`cannot be proven with the given equations, a 
+        ProofException is raised and this Proof is not extended.
+        '''
+        to = target
+        rs = eqs
+
+        #lhs, rhs = self.terms[0], self.terms[-1]
+        #rs.append(lhs == rhs)
+        if not prove(self.last() == to, *rs):
+            user_rules = rs
+            if len(user_rules) > 0:
+                with_str = f' with {user_rules}'
+            else:
+                with_str = ''
+            raise ProofException(f"Cannot prove {self.last()} == {to}{with_str}")
+        self.terms.append(to)
+        self.eqs.append(rs)
+
+
     def __iadd__(self, other):
         ''' Extends this Proof with `other`, which is assumed to be a 
         single step consisting of a target term and zero or more 
@@ -89,22 +112,11 @@ class Proof:
         if len(other) == 0:
             raise ProofException(f'Expected a tuple with at least 1 element, got {other}')
 
-        to = other[0]
-        rs = list(other[1:])
-
-        lhs, rhs = self.terms[0], self.terms[-1]
-        rs.append(lhs == rhs)
-        if not prove(rhs == to, *rs):
-            user_rules = rs[:-1]
-            if len(user_rules) > 0:
-                with_str = f' with {user_rules}'
-            else:
-                with_str = ''
-            raise ProofException(f"Cannot prove {rhs} == {to}{with_str}")
-        self.terms.append(to)
-        self.eqs.append(rs[:-1])
+        self.add_step(eqs = list(other[1:]),
+                      target = other[0])
         return self
-
+    
+    
     def __add__(self, other):
         '''Returns a new Proof by appending `other` to `self`.
         
