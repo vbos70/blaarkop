@@ -3,6 +3,25 @@ from eqrw import *
 from test_framework import test, run_tests, test_summary, test_print
 
 @test
+def test_Equation():
+    i, j = Ints('i j')
+    eq = Equation(i + 10, j + i)
+    assert eq.lhs == i + 10
+    assert eq.rhs == j + i
+    assert str(eq) == 'i + 10 == j + i'
+    assert eq.expr == (i + 10 == j + i)
+
+    eq = Equation(10, i)
+    assert eq.lhs == 10
+    assert eq.rhs == i
+    assert str(eq) == '10 == i'
+    assert eq.expr == (10 == i)
+
+    # NOTE: (10 == i) is evaluated as i.__eq__(10), i.e., as i == 10:
+    assert str(eq.expr) == "i == 10"
+    assert not str(eq.expr) == str(eq)
+
+@test
 def test_prove():
     i, j = Ints('i j')
     eq1 = i == j + 100
@@ -16,7 +35,7 @@ def test_prove():
 def test_Proof__init__():
     i, j = Ints('i j')
     p = Proof(i, j)
-    assert p.eq0 == (i, j)
+    assert p.eq0.expr == (i == j)
     assert p.terms[0] == i
 
 
@@ -24,7 +43,7 @@ def test_Proof__init__():
 def test_Proof_theorem():
     i, j = Ints('i j')
     p = Proof(i, j)
-    assert p.theorem() == (i == j)
+    assert p.eq0.expr == (i == j)
 
 
 @test
@@ -107,7 +126,7 @@ def test_Proof__add__():
     test_print()
 
     p3 = p1 + p2
-    assert p3.theorem() == (i == IV(117)), f'Fails: {p3.theorem()} == {i == IV(117)}'
+    assert p3.eq0.expr == (i == IV(117)), f'Fails: {p3.eq0} == {i == IV(117)}'
     test_print(p3)
 
 
@@ -144,16 +163,16 @@ def test_proving():
     p1 = Proof(A, 2 * 3 -2 * C/2 + C)
     p1 += 2 * 3 - 2 * C/2 + C, eq_A, eq_B
     assert p1.is_complete()
-    test_print(p1.theorem())
+    test_print(p1.eq0)
 
     p2 = Proof(2 * 3 -2 * C/2 + C, 6)
     p2 += 6
     assert p2.is_complete()
-    test_print(p2.theorem())
+    test_print(p2.eq0)
 
     test_print()
     p = p1 + p2
-    test_print(p.theorem())
+    test_print(p.eq0)
     test_print(p)
 
     test_print()
@@ -175,15 +194,15 @@ def test_proof_summary():
     p += 2 * B + C,             eq_A
     p += 2 * (3 - C/2) + C,     eq_B
     assert not p.is_complete()
-    test_print(f'summary of {p.theorem()}')
+    test_print(f'summary of {p.eq0}')
     test_print(p.summary())
     test_print()
 
     p += 2 * 3 - 2 * C/2 + C
     p += 6 - C + C
     p += 6
-    assert p.is_complete(), f'Expected proof of {p.theorem()} to be complete.'
-    test_print(f'summary of {p.theorem()}')
+    assert p.is_complete(), f'Expected proof of {p.eq0} to be complete.'
+    test_print(f'summary of {p.eq0}')
     test_print(p.summary())
     test_print()
 

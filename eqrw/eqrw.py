@@ -1,5 +1,9 @@
+from dataclasses import dataclass
+
 import z3
 _solver = z3.Solver()
+
+Expr = z3.ExprRef
 
 def prove(formula, *eqs, solver: z3.Solver =_solver):
     ''' Returns True if `formula` can be proven by `solver` 
@@ -12,11 +16,24 @@ def prove(formula, *eqs, solver: z3.Solver =_solver):
     solver.pop()
     return result
 
+@dataclass
+class Equation:
+    lhs : Expr
+    rhs : Expr
+
+    def __str__(self):
+        return f'{self.lhs} == {self.rhs}'
+
+    @property
+    def expr(self):
+        return self.lhs == self.rhs
+
+    
 class ProofException(Exception): pass
 class Proof:
 
-    def __init__(self, lhs, rhs):
-        self.eq0 = (lhs, rhs)
+    def __init__(self, lhs: Expr, rhs: Expr):
+        self.eq0 = Equation(lhs, rhs)
         self.terms = [lhs]
         self.eqs = []
     
@@ -25,16 +42,12 @@ class Proof:
         for eqs, r in zip(self.eqs, self.terms[1:]):
             yield (l, eqs, r)
             l = r
-
-            
-    def theorem(self):
-        return self.lhs() == self.rhs()
     
     def lhs(self):
-        return self.eq0[0]
+        return self.eq0.lhs
     
     def rhs(self):
-        return self.eq0[1]
+        return self.eq0.rhs
     
     def first(self):
         return self.lhs()
@@ -64,7 +77,7 @@ class Proof:
             if not (self.last() == other.first()):
                 raise ProofException(f"First proof's final term is different from second proof's first term.")
 
-            self.eq0 = (self.eq0[0], other.eq0[1])
+            self.eq0 = Equation(self.lhs(), other.rhs())
             for (to, eqs) in zip(other.terms[1:], other.eqs):
                 self.terms.append(to)
                 self.eqs.append(eqs)
@@ -108,7 +121,7 @@ class Proof:
         return self.lhs() == self.first() and self.rhs() == self.last()
     
     def __str__(self):
-        result = [f'Theorem: {self.lhs()} == {self.rhs()}',
+        result = [f'Theorem: {self.eq0}',
                   'Proof:' if self.is_complete() else 'Partial proof:']
         result += [f'   {self.terms[0]}']
         for (rs, t1) in zip(self.eqs, self.terms[1:]):
