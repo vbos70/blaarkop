@@ -26,9 +26,6 @@
 - ax - ay = x-y?ax
 
 * A
-:PROPERTIES:
-:CREATED:  [2024-03-03 Sun 22:21]
-:END:
 
 'any action a in A'
 
@@ -54,9 +51,6 @@
 - (x + y)? z = (x?y)?z
 
 * x$A
-:PROPERTIES:
-:CREATED:  [2024-03-03 Sun 22:10]
-:END:
 
 'hide all a in A in x'
 
