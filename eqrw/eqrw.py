@@ -1,11 +1,12 @@
 from dataclasses import dataclass
+from itertools import zip_longest
 
 import z3
 _solver = z3.Solver()
 
 Expr = z3.ExprRef
 
-def prove(formula, *eqs, solver: z3.Solver =_solver):
+def z3_prove(formula, *eqs, solver: z3.Solver =_solver):
     ''' Returns True if `formula` can be proven by `solver` 
     using the equations in `*eqs` and the built in z3 laws / axioms.
     Returns False otherwise.
@@ -30,6 +31,15 @@ class Equation:
 
 
 class ProofException(Exception): pass
+
+
+def merge(l1, l2, fillvalue=''):
+    for a,b in zip_longest(l1, l2, fillvalue=fillvalue):
+        yield a
+        if len(b)>0:
+            yield b
+
+
 class Proof:
 
     def __init__(self, lhs: Expr, rhs: Expr):
@@ -70,7 +80,7 @@ class Proof:
 
         #lhs, rhs = self.terms[0], self.terms[-1]
         #rs.append(lhs == rhs)
-        if not prove(self.last() == to, *rs):
+        if not z3_prove(self.last() == to, *rs):
             user_rules = rs
             if len(user_rules) > 0:
                 with_str = f' with {user_rules}'
@@ -158,3 +168,52 @@ class Proof:
             result.append(f'?? incomplete proof')
         result.append(f'   {self.rhs()}')
         return "\n".join(result)
+
+
+class EqProof(list):
+    def __init__(self, e):
+        ''' Create an equational proof starting with z3 expression `e`.
+        Since `e` is the initial step of the proof, its justification is set to `None`.
+        '''
+        super().__init__([e])
+        self.justification = [None]
+        
+
+    def step_is_valid(self, i=None):
+        ''' Checks if step `i` in this proof is valid, meaning it can be proven by z3.
+
+        Returns `True` if z3 can prove step `i`, `False` otherwise.
+
+        If no `i` is given (`i==None`), the last step of the proof is checked.
+
+        A `ProofException` is raised if `i<0` or `i>=len(self)`. 
+        '''
+        if i is None:
+            i = len(self)-1
+        if i < 0:
+            raise ProofException(f"step index shall be at least 0, got {i}")
+        if not i < len(self):
+            raise ProofException(f"step index shall less than the len(self) ({len(self)}), got {i}")
+        if i == 0:
+            return True
+        return z3_prove(self[i-1] == self[i], self.justification[i])
+    
+
+    def append(self, e, *cs):
+        '''Extends this proof by z3 expression `e` and justification `*cs`.
+
+        Raises a `ProofException` if z3 cannot prove `e` with the justification `*cs`.
+        '''
+        if not z3_prove(self[-1] == e, *cs):
+            raise ProofException(f"Cannot proof {self[-1]} == {e} from {cs}")
+        super().append(e)
+        self.justification.append(cs)
+
+
+    def add(self, e, *cs):
+        '''This is an alias for `append()`.'''
+        self.append(e, *cs)
+    
+    def eq_proof_str(self, indent = 0):
+        return "\n".join(merge(((" " * indent)+ "  " + str(e) for e in self), 
+                               ((" " * indent)+"= {" + ", ".join(str(c) for c in cs) + "}" for cs in self.justification[1:])))
