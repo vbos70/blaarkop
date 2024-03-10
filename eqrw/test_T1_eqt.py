@@ -18,7 +18,7 @@ def prop2_2_7():
     # step_eqs: p == succ(p0),add(zero, p0) == p0
 
     # base
-    p = Const('p', S)
+    p = Const('p', Nat)
     pr_base = Proof(add(zero, p), p)
     pr_base += add(zero, zero), p == zero  # base
     pr_base += zero,            PA1
@@ -26,7 +26,7 @@ def prop2_2_7():
     assert pr_base.is_complete()
 
     # induction step, first introduce p0
-    p0 = Const('p0', S)
+    p0 = Const('p0', Nat)
     pr_succ = Proof(add(zero,p), p)
     pr_succ += add(zero, succ(p0)), p == succ(p0)        # IHp
     pr_succ += succ(add(zero, p0)), PA2

@@ -4,7 +4,7 @@ from test_framework import *
 @test
 def inductive_proof():
 
-    p = Const('p', S)
+    p = Const('p', Nat)
     ip = NIProof(p, add(zero, p), p)
     assert not ip.is_complete()
     

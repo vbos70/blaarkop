@@ -4,7 +4,7 @@ from eqrw import *
 
 @test
 def ex():
-    n = Const('n', S)
+    n = Const('n', Nat)
     p = Proof(exp(n, succ(zero)), n)
     p += mul(exp(n, zero), n), PA6
     p += mul(succ(zero), n), PA5
