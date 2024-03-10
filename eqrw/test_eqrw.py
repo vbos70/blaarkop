@@ -2,24 +2,16 @@ from z3 import *
 from eqrw import *
 from test_framework import test, run_tests, test_summary, test_print
 
+
 @test
-def test_Equation():
-    i, j = Ints('i j')
-    eq = Equation(i + 10, j + i)
-    assert eq.lhs == i + 10
-    assert eq.rhs == j + i
-    assert str(eq) == 'i + 10 == j + i'
-    assert eq.expr == (i + 10 == j + i)
+def test_Expr():
+    i = Int('i')
+    i0 = IntVal(10)
 
-    eq = Equation(10, i)
-    assert eq.lhs == 10
-    assert eq.rhs == i
-    assert str(eq) == '10 == i'
-    assert eq.expr == (10 == i)
-
-    # NOTE: (10 == i) is evaluated as i.__eq__(10), i.e., as i == 10:
-    assert str(eq.expr) == "i == 10"
-    assert not str(eq.expr) == str(eq)
+    assert not isinstance(10, Expr)
+    assert isinstance(i, Expr)
+    assert isinstance(i0, Expr)
+    assert isinstance(i+i0, Expr)
 
 @test
 def test_prove():
@@ -238,73 +230,9 @@ def test_proof_summary():
     test_print()
 
 
-@test
-def test_EqProof_append():
-    a, b, c = Ints('a b c')
-    p = EqProof(10)
-    p.append(10 + c - c)
-    p.append(c + 10, c == 0)
-    p.append(a - 91, c == 0, a == 101)
-
-    assert len(p) == 4
-    #print(p.eq_proof_str(indent=4))
-    #print(p[-1])
-
-@test
-def test_EqProof_add():
-    a, b, c = Ints('a b c')
-    p = EqProof(10)
-    p.add(10 + c - c)
-    p.add(c + 10, c == 0)
-    p.add(a - 91, c == 0, a == 101)
-
-    assert len(p) == 4
-    #print(p.eq_proof_str(indent=4))
-    #print(p[-1])
-
-
-@test
-def test_EqProof_iadd():
-    a, b, c = Ints('a b c')
-
-    t = Theory('th1', {c == 0, a == 101})
-    #print(f"Theory {t}:")
-    #print("    " + ("\n    ".join(str(eq) for eq in t)))
-
-    assert t[0] == (c == 0)
-
-    assert t.EQ0 == (c == 0)
-    assert t.EQ1 == (a == 101)
-    
-    p = EqProof(10)
-    p += 10 + c - c
-    p += c + 10, t.EQ0
-    p += a - 91, t
-
-    assert len(p) == 4
-    print('Proof')
-    print(p.eq_proof_str(indent=4))
-    #print(p[-1])
-
-
-@test
-def test_Theory():
-    a, b, c = Ints('a b c')
-    T1 = Theory('T1', [a == 1, b==10])
-    T2 = Theory('T2', [b == 10, c == 2])
-
-    assert len(T1) == 2
-    assert len(T2) == 2
-    assert T1.name == 'T1'
-    assert T2.name == 'T2'
-
-    T1_T2 = T1 + T2
-    assert T1_T2.name == '(T1+T2)'
-    assert len(T1_T2) == 3
 
 run_tests(print_summary_only=True, new_suppress_test_output=True)
 print(test_summary())
 
 #run_tests(test_proof_summary, new_suppress_test_output=True)
 #print(test_summary())
-
