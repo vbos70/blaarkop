@@ -177,12 +177,12 @@ class Proof:
         return "\n".join(result)
 
 
-class EqProof(list):
+class EqProof():
     def __init__(self, e):
         ''' Create an equational proof starting with z3 expression `e`.
         Since `e` is the initial step of the proof, its justification is set to `None`.
         '''
-        super().__init__([e])
+        self.step = [e]
         self.justification = [None]
         
 
@@ -196,33 +196,84 @@ class EqProof(list):
         A `ProofException` is raised if `i<0` or `i>=len(self)`. 
         '''
         if i is None:
-            i = len(self)-1
+            i = len(self.step)-1
         if i < 0:
             raise ProofException(f"step index shall be at least 0, got {i}")
-        if not i < len(self):
-            raise ProofException(f"step index shall less than the len(self) ({len(self)}), got {i}")
+        if not i < len(self.step):
+            raise ProofException(f"step index shall less than the len(self): {len(self.step)}, got {i}")
         if i == 0:
             return True
-        return z3_prove(self[i-1] == self[i], self.justification[i])
+        return z3_prove(self.step[i-1] == self.step[i], self.justification[i])
     
 
-    def append(self, e, *cs):
-        '''Extends this proof by z3 expression `e` and justification `*cs`.
+    def _extend_(self, e, cs):
+        equations = []
+        for c in cs:
+            if type(c) == Theory:
+                equations.extend(c)
+            else:
+                equations.append(c)
 
-        Raises a `ProofException` if z3 cannot prove `e` with the justification `*cs`.
-        '''
-        if not z3_prove(self[-1] == e, *cs):
-            raise ProofException(f"Cannot proof {self[-1]} == {e} from {cs}")
-        super().append(e)
+        if not z3_prove(self.step[-1] == e, equations):
+            raise ProofException(f"Cannot proof {self.step[-1]} == {e} from {cs}")
+        self.step.append(e)
         self.justification.append(cs)
 
 
+    def __iadd__(self, other):
+        '''Extends this proof by z3 expression `e` and justification `*cs`.
+
+        Returns `self`.
+
+        Raises a `ProofException` if z3 cannot prove `e` with the justification `*cs`.
+        '''
+        if type(other) is not tuple:
+            other = (other,)
+        self._extend_(other[0], other[1:])
+        return self
+
     def add(self, e, *cs):
-        '''This is an alias for `append()`.'''
-        self.append(e, *cs)
-        
-    
+        '''This is equivalent to `self.__iadd__(tuple([e] + cs))`.'''
+        self._extend_(e, cs)
+
+
+    def append(self, e, *cs):
+        '''This is equivalent to `self.__iadd__(tuple([e] + cs))`.'''
+        self._extend_(e, cs)
+
     def eq_proof_str(self, indent = 0):
-        return "\n".join(merge(((" " * indent)+ "  " + str(e) for e in self), 
+        return "\n".join(merge(((" " * indent)+ "  " + str(e) for e in self.step), 
                                ((" " * indent)+"= {" + ", ".join(str(c) for c in cs) + "}" for cs in self.justification[1:]),
                                fillvalue=''))
+
+    def __getitem__(self, i):
+        if type(i) == slice:
+            result = EqProof(self[i.start])
+            result.step = self.step[i]
+            result.justification = self.justification[i]
+            return result
+        return EqProof(self.step[i])
+    
+    def __len__(self):
+        return len(self.step)
+
+class Theory(set):
+
+    def __init__(self, name, equations):
+        super().__init__(equations)
+        self.name = name
+    
+    def __str__(self):
+        return self.name
+    
+    def __add__(self, other):
+        return Theory(f'({self.name}+{other.name})', self | other)
+    
+    def __getitem__(self, i):
+        return list(self)[i]
+    
+    def __getattr__(self, a):
+        if a[:2] == 'EQ':
+            return self[int(a[2:])]
+        else:
+            raise AttributeError(f'Theory object has no attribute called {a}')
