@@ -26,9 +26,9 @@ def test_prove():
     i, j = Ints('i j')
     eq1 = i == j + 100
     eq2 = j == 17
-    assert prove(i == 117, eq1, eq2)
+    assert z3_prove(i == 117, eq1, eq2)
 
-    assert not prove(i == 117, eq1)
+    assert not z3_prove(i == 117, eq1)
 
 
 @test
@@ -237,6 +237,18 @@ def test_proof_summary():
     test_print(p.summary())
     test_print()
 
+
+@test
+def test_EqProof():
+    a, b, c = Ints('a b c')
+    p = EqProof(10)
+    p.append(10 + c - c)
+    p.append(c + 10, c == 0)
+    p.append(a - 91, c == 0, a == 101)
+
+    assert len(p) == 4
+    print(p.eq_proof_str(indent=4))
+    print(p[-1])
 
 run_tests(print_summary_only=True, new_suppress_test_output=True)
 print(test_summary())
