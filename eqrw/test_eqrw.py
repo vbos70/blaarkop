@@ -1,6 +1,6 @@
 from z3 import *
 from eqrw import *
-from test_framework import test, run_tests, test_summary, test_print, set_test_suite
+from test_framework import test, run_tests, test_summary, test_print
 
 @test
 def test_Expr():

@@ -1,20 +1,10 @@
-from test_framework import run_tests, set_test_suite, test_summary
-set_test_suite('eqrw')
+from test_framework import run_tests, test_summary
+
 import test_eqrw
-
-set_test_suite('test_equation')
 import test_equation
-
-set_test_suite('test_theory')
 import test_theory
-
-set_test_suite('test_eqproof')
 import test_eqproof
-
-set_test_suite('test_T1_eqt')
 import test_T1_eqt
-
-set_test_suite('test_T2_eqt')
 import test_T2_eqt
 
 if __name__ == '__main__':

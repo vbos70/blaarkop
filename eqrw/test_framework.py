@@ -5,14 +5,7 @@ num_failed_tests = 0
 test_output = []
 suppress_test_output = False
 summary_only = False
-#test_funcs = []
 test_dict = dict()
-#test_names = set()
-test_suite = ''
-
-def set_test_suite(name):
-    global test_suite
-    test_suite = name
 
 def test_print(*args):
     global suppress_test_output
@@ -21,7 +14,6 @@ def test_print(*args):
 
 def test(func):
     global test_dict
-    global test_suite
 
     def inner():
         global num_tests
@@ -29,8 +21,6 @@ def test(func):
         global test_output
         global summary_only
 
-        #if not summary_only:
-        #    print(f'# Test {func.__name__}: ', end='', flush=True)
         try:            
             test_output = []
             num_tests += 1
@@ -48,10 +38,10 @@ def test(func):
             print(f'Error:')
             print_exception(e)
 
-    if len(test_suite)>0:
-        tn = f'{test_suite}:{func.__name__}'
+    if func.__module__ is not None and len(func.__module__)>0:
+        tn = f'{func.__module__}.py:{func.__name__}()'
     else:
-        tn = func.__name__
+        tn = f':{func.__name__}()'
     if tn in test_dict:
         print(f'Error: duplicate test name: {tn}')
     test_dict[tn] = inner
@@ -91,7 +81,7 @@ def run_tests(*selected, print_summary_only=False, new_suppress_test_output = Fa
 
     for tf in tf_iter:
         if not summary_only:
-            print(f'# Test {tf}: ', end='', flush=True)
+            print(f'# {tf}: ', end='', flush=True)
         test_dict[tf]()
 
     # restore global output suppression
