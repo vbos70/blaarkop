@@ -1,7 +1,6 @@
 from z3 import *
 from eqrw import *
-from test_framework import test, run_tests, test_summary, test_print
-
+from test_framework import test, run_tests, test_summary, test_print, set_test_suite
 
 @test
 def test_Expr():
@@ -230,9 +229,9 @@ def test_proof_summary():
     test_print()
 
 
+if __name__ == '__main__':
+    run_tests(print_summary_only=True, new_suppress_test_output=True)
+    print(test_summary())
 
-run_tests(print_summary_only=True, new_suppress_test_output=True)
-print(test_summary())
-
-#run_tests(test_proof_summary, new_suppress_test_output=True)
-#print(test_summary())
+    #run_tests(test_proof_summary, new_suppress_test_output=True)
+    #print(test_summary())

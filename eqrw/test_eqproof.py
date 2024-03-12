@@ -12,8 +12,8 @@ def test_EqProof_append():
     p.append(a - 91, c == 0, a == 101)
 
     assert len(p) == 4
-    #print(p.eq_proof_str(indent=4))
-    #print(p[-1])
+    #test_print(p.eq_proof_str(indent=4))
+    #test_print(p[-1])
 
 @test
 def test_EqProof_add():
@@ -24,8 +24,8 @@ def test_EqProof_add():
     p.add(a - 91, c == 0, a == 101)
 
     assert len(p) == 4
-    #print(p.eq_proof_str(indent=4))
-    #print(p[-1])
+    #test_print(p.eq_proof_str(indent=4))
+    #test_print(p[-1])
 
 
 @test
@@ -33,8 +33,8 @@ def test_EqProof_iadd():
     a, b, c = Ints('a b c')
 
     t = Theory('th1', {c == 0, a == 101})
-    #print(f"Theory {t}:")
-    #print("    " + ("\n    ".join(str(eq) for eq in t)))
+    #test_print(f"Theory {t}:")
+    #test_print("    " + ("\n    ".join(str(eq) for eq in t)))
 
     assert t[0].eq == (c == 0)
 
@@ -48,8 +48,8 @@ def test_EqProof_iadd():
 
     assert len(p) == 4
     
-    print(p.eq_proof_str(indent=4))
-    #print(p[-1])
+    test_print(p.eq_proof_str(indent=4))
+    #test_print(p[-1])
 
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)

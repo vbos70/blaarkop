@@ -5,7 +5,14 @@ num_failed_tests = 0
 test_output = []
 suppress_test_output = False
 summary_only = False
-test_funcs = []
+#test_funcs = []
+test_dict = dict()
+#test_names = set()
+test_suite = ''
+
+def set_test_suite(name):
+    global test_suite
+    test_suite = name
 
 def test_print(*args):
     global suppress_test_output
@@ -13,7 +20,8 @@ def test_print(*args):
         test_output.extend(list(str(a) for a in args))
 
 def test(func):
-    global test_funcs
+    global test_dict
+    global test_suite
 
     def inner():
         global num_tests
@@ -21,8 +29,8 @@ def test(func):
         global test_output
         global summary_only
 
-        if not summary_only:
-            print(f'# Test {func.__name__}: ', end='', flush=True)
+        #if not summary_only:
+        #    print(f'# Test {func.__name__}: ', end='', flush=True)
         try:            
             test_output = []
             num_tests += 1
@@ -40,7 +48,13 @@ def test(func):
             print(f'Error:')
             print_exception(e)
 
-    test_funcs.append(inner)
+    if len(test_suite)>0:
+        tn = f'{test_suite}:{func.__name__}'
+    else:
+        tn = func.__name__
+    if tn in test_dict:
+        print(f'Error: duplicate test name: {tn}')
+    test_dict[tn] = inner
     return inner
 
 def test_summary():
@@ -58,7 +72,7 @@ def run_tests(*selected, print_summary_only=False, new_suppress_test_output = Fa
     global num_tests
     global num_failed_tests
     global suppress_test_output
-    global test_funcs
+    global test_dict
     global summary_only
 
     # remember global output suppression switch
@@ -71,12 +85,14 @@ def run_tests(*selected, print_summary_only=False, new_suppress_test_output = Fa
     num_tests = 0
     num_failed_tests = 0
 
-    tf_iter = test_funcs
+    tf_iter = test_dict
     if len(selected) > 0:
-        tf_iter = (tf for tf in test_funcs if tf in selected)
+        tf_iter = (tf for tf in test_dict if test_dict[tf] in selected)
 
     for tf in tf_iter:
-        tf()
+        if not summary_only:
+            print(f'# Test {tf}: ', end='', flush=True)
+        test_dict[tf]()
 
     # restore global output suppression
     suppress_test_output = sto
