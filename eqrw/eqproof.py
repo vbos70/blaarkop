@@ -40,6 +40,12 @@ class EqProof():
     
 
     def _extend_(self, e, cs):
+        '''Extends this proof by z3 expression `e` and justification `*cs`.
+
+        Returns `self`.
+
+        Raises a `ProofException` if z3 cannot prove `e` with the justification `*cs`.
+        '''
         equations = []
         for c in cs:
             if type(c) == Theory:
@@ -55,28 +61,27 @@ class EqProof():
             raise EqProofException(f"Cannot proof {self.step[-1]} == {e} from {cs}")
         self.step.append(e)
         self.justification.append(cs)
+        return self
 
 
     def __iadd__(self, other):
-        '''Extends this proof by z3 expression `e` and justification `*cs`.
+        '''This defines the in-place `+=` operator for EqProof objects.
 
-        Returns `self`.
-
-        Raises a `ProofException` if z3 cannot prove `e` with the justification `*cs`.
+        The effect is equal to `self._extend_(other[0], other[1:]).
         '''
         if type(other) is not tuple:
             other = (other,)
-        self._extend_(other[0], other[1:])
-        return self
+        return self._extend_(other[0], other[1:])
+
 
     def add(self, e, *cs):
         '''This is equivalent to `self.__iadd__(tuple([e] + cs))`.'''
-        self._extend_(e, cs)
+        return self._extend_(e, cs)
 
 
     def append(self, e, *cs):
         '''This is equivalent to `self.__iadd__(tuple([e] + cs))`.'''
-        self._extend_(e, cs)
+        return self._extend_(e, cs)
 
     def eq_proof_str(self, indent = 0):
         return "\n".join(merge(((" " * indent)+ "  " + str(e) for e in self.step), 
