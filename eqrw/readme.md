@@ -51,3 +51,24 @@ Setup:
 4. List unproven steps with index
    The index can be used in __getitem__ and slices.
 
+## Ideas
+
+Use context managers to build proofs:
+
+    EQ = eqrw.CtxMgr()
+    with EQ(start):
+        x + y
+    with EQ(y == 3 * x):
+        x + (3 * x):
+    with EQ():
+        4 * x
+
+    print(EQ.proof())
+
+Output:
+
+       x + y
+    == [x == 3 * y ]
+       x + (3 * x)
+    == []
+       4 * x

@@ -78,8 +78,6 @@ def test_f2():
     n, m = Ints('n m')
 
     th0 = AttrDict(
-        n = Int('n'),
-        m = Int('m'),
         nats = And((n >= 0), (m>=0)) ,
         eq1 = n == 1,
         eq2 = m == n + 8)
@@ -102,52 +100,57 @@ def test_f2():
 from contextlib import contextmanager
 
 @contextmanager
-def push_scope(ns: dict):
-    g = globals()
-    old_g = dict(globals())
-    for n in ns:
-        g[n] = ns[n]
+def push_scope(cur_scope):
     try:
+        print(f'pushed scope {id(cur_scope)}: {",".join(n for n in cur_scope)}')
+        old_g = dict(cur_scope)
         yield None
     finally:
-        g_new = []
-        for n in g:
+        d = []
+        print(f'popped scope {id(cur_scope)}: {",".join(n for n in cur_scope)}')
+        for n in cur_scope:
             if n in old_g:
-                g[n] = old_g[n]
+                cur_scope[n] = old_g[n]
             else:
-                g_new.append(n)
-        for n in g_new:
-            del g[n]
-
-    
+                d.append(n)
+        print(f'deleting {",".join(n for n in d)} from dict {id(cur_scope)}')
+        for n in d:
+            del cur_scope[n]
+            assert n not in cur_scope
+            
+                
 @test
 def test_f3():
 
-    n, m = Ints('n m')
+    try:
+        assert n == 1
+    except NameError:
+        pass
 
-    th0 = AttrDict(
-        n = Int('n'),
-        m = Int('m'),
-        nats = And((n >= 0), (m>=0)) ,
-        eq1 = n == 1,
-        eq2 = m == n + 8)
-
-    eq1 = 'undefined'
-
-    with push_scope(th0):
-        p = EqProof(m)
-        p += n + 8, eq2
-        p += IntVal(1) + 8, eq1
-        p += 9
-    
+    with push_scope(locals()):
+        n = Int('n')
+        m = Int('m')
+        eq1 = 'undefined'
+        with push_scope(locals()):
+            nats = And((n >= 0), (m>=0))            
+            eq1 = n == 1
+            eq2 = m == n + 8
+            assert 'eq2' in locals()
+            p = EqProof(m)
+            p += n + 8, eq2
+            p += IntVal(1) + 8, eq1
+            p += 9
+        assert 'nats' not in locals()
+        assert eq1 == 'undefined'
+    assert not 'n' in locals()
+    assert not 'nats' in locals()
     test_print(p.eq_proof_str())
     # Verify the theory names are out of scope.
     try:
-        assert nats == None
-    except NameError as ne:
-        assert str(ne) == "name 'nats' is not defined"
+        assert globals()['nats'] == None, f"Unexpected nats: {nats}"
+    except KeyError as ke:
+        pass
 
-    assert eq1 == 'undefined'
 
 if __name__ == '__main__':
 
