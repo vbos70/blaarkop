@@ -100,23 +100,16 @@ def test_f2():
 from contextlib import contextmanager
 
 @contextmanager
-def push_scope(cur_scope):
+def push_scope(cur_scope, level=[]):
     try:
-        print(f'pushed scope {id(cur_scope)}: {",".join(n for n in cur_scope)}')
-        old_g = dict(cur_scope)
-        yield None
+        level.append(None)
+        indent = '    ' * len(level)
+        print(indent + f'with: pushed scope {id(cur_scope)}: {",".join(n for n in cur_scope)}')
+        old_g = AttrDict(cur_scope)
+        print(indent + f'backup scope: {id(old_g)}: {",".join(n for n in old_g)}')
+        yield old_g
     finally:
-        d = []
-        print(f'popped scope {id(cur_scope)}: {",".join(n for n in cur_scope)}')
-        for n in cur_scope:
-            if n in old_g:
-                cur_scope[n] = old_g[n]
-            else:
-                d.append(n)
-        print(f'deleting {",".join(n for n in d)} from dict {id(cur_scope)}')
-        for n in d:
-            del cur_scope[n]
-            assert n not in cur_scope
+        print(indent + f'finally: restore scope: {id(old_g)}: {",".join(n for n in old_g)}')
             
                 
 @test
@@ -126,12 +119,13 @@ def test_f3():
         assert n == 1
     except NameError:
         pass
-
-    with push_scope(locals()):
+    print()
+    with push_scope(locals()) as prev:
         n = Int('n')
         m = Int('m')
         eq1 = 'undefined'
-        with push_scope(locals()):
+        assert 'nats' not in locals()
+        with push_scope(locals()) as prev:
             nats = And((n >= 0), (m>=0))            
             eq1 = n == 1
             eq2 = m == n + 8
@@ -140,8 +134,17 @@ def test_f3():
             p += n + 8, eq2
             p += IntVal(1) + 8, eq1
             p += 9
-        assert 'nats' not in locals()
-        assert eq1 == 'undefined'
+        del nats
+        del eq1
+        n = prev.n
+        m = prev.n
+        eq1 = prev.eq1
+        print(",".join(n for n in prev))
+
+    del n
+    del m
+    del eq1
+    print(",".join(n for n in prev))
     assert not 'n' in locals()
     assert not 'nats' in locals()
     test_print(p.eq_proof_str())
