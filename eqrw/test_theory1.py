@@ -2,6 +2,7 @@ from typing import Any
 from eqproof import EqProof
 from z3 import *
 from test_framework import test, run_tests, test_summary, test_print
+from utils import AttrDict
 
 @test
 def test_f0():
@@ -20,13 +21,6 @@ def test_f0():
     p += 9
 
 
-
-class AttrDict(dict):
-
-    def __getattribute__(self, __name: str) -> Any:
-        if __name in self:
-            return self[__name]
-        return super().__getattribute__(__name)
 
 def open_theory(t):
     g = globals()

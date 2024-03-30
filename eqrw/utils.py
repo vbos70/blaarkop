@@ -18,3 +18,18 @@ def split(l, n):
     length `n`, except the final sub-list which might be shorter then `n`
     '''
     return [l[j:j+n] for j in range(0,len(l),n)]
+
+
+class AttrDict(dict):
+    '''Dictionaries with (str) keys as attributes.
+    
+    The attribute access `d.a` for `d : AttrDict` is resolved by first 
+    looking up `a` according to normal attribute lookup rules. If `a` is not
+    found, then `d[a]` is tried.
+    '''
+
+    def __getattr__(self, __name: str):
+        if __name in self:
+            return self[__name]
+        raise AttributeError(f'Attribute {__name} was not found')
+
