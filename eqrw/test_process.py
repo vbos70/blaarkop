@@ -3,13 +3,13 @@ from process import *
 
 @test
 def test_1():        
-    p0 = empty
+    p0 = zero
     test_print(p0)
 
-    p1 = delta
+    p1 = one
     test_print(p1)
 
-    pAll = const_process('@A')
+    pAll = Action('@A')
     test_print(pAll)
 
     p = p0 + p1
@@ -22,19 +22,27 @@ def test_1():
 
 
 
-def actions(*acts):
-    return tuple(Action(x) for x in acts)
-
 @test
 def test_2():
-    a,b,c = actions(*'abc')
+    a,b,c = actions('abc')
 
     assert str(a) == 'a'
 
 
-    p = a*b*c*empty
-    assert str(p) == 'a * b * c * empty', f"Error: {str(p)} != a * b * c * empty" 
+    p = a*b*c*one
+    assert str(p) == 'a * b * c * one', f"Error: {str(p)} != a * b * c * one" 
 
+    p = a * (b * c)
+    assert str(p) == 'a * (b * c)'
+
+@test
+def test_eq():
+    a,b,c = actions('abc')
+    p = a*b*c*one
+    eq = p == a*b*c*one
+    assert str(eq) == str(p) + ' == ' + str(p)
+    
+    
 if __name__ == '__main__':
     run_tests(print_summary_only=False, new_suppress_test_output=True)
     print(test_summary())

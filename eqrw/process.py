@@ -2,13 +2,16 @@ from z3 import *
 
 from enum import Enum
 
+Process = DeclareSort('Process')
+
 class ProcessException(Exception): pass
 
-ProcessType = Enum('ProcessType', 'Action Const Seq Alt Merge CMerge LMerge')
+ProcessType = Enum('ProcessType', 'Atom Var Action Seq Alt Merge CMerge LMerge')
 ProcessRepr = {
     # process prefix constructors
+    ProcessType.Atom: 'Atom',
+    ProcessType.Var: 'Var',
     ProcessType.Action: 'Action',
-    ProcessType.Const: 'Const',
     ProcessType.CMerge: 'cmerge',
     ProcessType.LMerge: 'lmerge',
 
@@ -17,6 +20,7 @@ ProcessRepr = {
     ProcessType.Alt: '+',
     ProcessType.Merge: '|'
 }
+
 
 
 def parenthesize_process_in_context(p, ctx: ProcessType, strict=True):
@@ -33,12 +37,34 @@ def parenthesize_process_in_context(p, ctx: ProcessType, strict=True):
         return str(p)
 
 
-class Process:
+class ProcessEquality:
+
+    def __init__(self, lhs, rhs):
+        self.lhs = lhs
+        self.rhs = rhs
+    
+    def __str__(self):
+        return f'{str(self.lhs)} == {str(self.rhs)}'
+
+    @property
+    def z3expr(self):
+        return self.lhs.z3expr == self.rhs.z3expr
+    
+
+#z3Process = Function('z3Process', Process)
+
+class CoreProcess:
 
     def __init__(self, proc_type, *sub_procs):
+        self.z3expr = None#Const(f'Process({",".join(sub_procs)})', Process)
         self.proc_type = proc_type
         self.sub_procs = sub_procs
-        
+
+
+    def __eq__(self, other):
+        '''Equality == '''
+        return ProcessEquality(self, other)
+
     def __mul__(self, other):
         ''' Seq * '''
         return Seq(self, other)
@@ -52,77 +78,108 @@ class Process:
         return Merge(self, other)
 
     def __str__(self):
-        if self.proc_type == ProcessType.Action:
-            return str(self.sub_procs[0])
-        if self.proc_type == ProcessType.Const:
-            return str(self.sub_procs[0])
-        elif self.proc_type == ProcessType.CMerge:
-            return f"cmerge({self.sub_procs[0]}, {self.sub_procs[1]})"
-        elif self.proc_type == ProcessType.LMerge:
-            return f"lmerge({self.sub_procs[0]}, {self.sub_procs[1]})"
-        else:
-            sub_proc_strs = [parenthesize_process_in_context(sp, self, strict=True) for sp in self.sub_procs]
-            return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
+        return str(self.z3expr)
+    
+class Var(CoreProcess):
 
-            
-def const_process(nm):
-    return Process(ProcessType.Const, nm)
+    def __init__(self, a):
+        '''Returns an a : Process '''
+        super().__init__(ProcessType.Var, a)
+        self.z3expr = Const(a, Process)
 
-delta = const_process('delta')
+    def __str__(self):
+        return str(self.sub_procs[0])
 
-empty = const_process('empty')
+def ids(xs, f=lambda x: x):
+    if ',' in xs:
+        xs = (x.strip() for x in xs.split(','))
+    return tuple(f(x) for x in xs)
 
-class Action(Process):
+def vars(vs):
+    return ids(vs, Var)
+
+
+class Atom(CoreProcess):
+
+    def __init__(self, a):
+        '''Returns an a : Process '''
+        super().__init__(ProcessType.Atom, a)
+        self.z3expr = Const(a, Process)
+
+    def __str__(self):
+        return str(self.sub_procs[0])
+
+def Atoms(ats):
+    return ids(ats, Atom)
+
+
+zero = Atom('zero')
+one = Atom('one')
+
+class Action(CoreProcess):
 
     def __init__(self, a):
         '''Returns an Action(a) : Process '''
         super().__init__(ProcessType.Action, a)
-        
+        self.z3expr = Const(a, Process)
+       
     def __str__(self):
         return str(self.sub_procs[0])
-    
-class Const(Process):
 
-    def __init__(self, a):
-        '''Returns an Const(a) : Process '''
-        super().__init__(ProcessType.Const, a)
-        
-    def __str__(self):
-        return f"Const({str(self.sub_procs[0])})"
-    
-    
-class Seq(Process):
+
+def actions(acts):
+    return ids(acts, Action)
+
+
+z3Seq = Function('z3Seq', Process, Process, Process)
+class Seq(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.Seq, x, y)
+        self.z3expr = z3Seq(x.z3expr, y.z3expr)
 
-    #def __str__(self):
-    #    return parenthesize_process_in_context(self.sub_procs[0], self) + " * " + parenthesize_process_in_context(self.sub_procs[1], self)
+    def __str__(self):
+        sub_proc_strs = [parenthesize_process_in_context(self.sub_procs[0], self, strict=True),
+                         parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
+        return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
     
-class Alt(Process):
+
+z3Alt = Function('z3Alt', Process, Process, Process)
+class Alt(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.Alt, x, y)
-        
-    #def __str__(self):
-    #    return parenthesize_process_in_context(self.sub_procs[0], self) + " + " + parenthesize_process_in_context(self.sub_procs[1], self)
-    
-class Merge(Process):
+        self.z3expr = z3Alt(x.z3expr, y.z3expr)
+
+    def __str__(self):
+        sub_proc_strs = [parenthesize_process_in_context(self.sub_procs[0], self, strict=True),
+                         parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
+        return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
+
+z3Merge = Function('z3Merge', Process, Process, Process)
+class Merge(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.Merge, x, y)
+        self.z3expr = z3Merge(x.z3expr, y.z3expr)
         
-    #def __str__(self):
-    #    return parenthesize_process_in_context(self.sub_procs[0], self) + " | " + parenthesize_process_in_context(self.sub_procs[1], self)
-    
-class CM(Process):
+    def __str__(self):
+        sub_proc_strs = [parenthesize_process_in_context(self.sub_procs[0], self, strict=True),
+                         parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
+        return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
+
+z3CM = Function('z3CM', Process, Process, Process)
+class CM(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.CMerge, x, y)
-        
+        self.z3expr = z3CM(x.z3expr, y.z3expr)
+
     def __str__(self):
         return f"CM({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"
 
 
-class LM(Process):
+z3LM = Function('z3LM', Process, Process, Process)
+class LM(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.LMerge, x, y)
+        self.z3expr = z3LM(x.z3expr, y.z3expr)
         
     def __str__(self):
         return f"LM({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"

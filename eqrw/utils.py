@@ -13,3 +13,8 @@ def merge(l1, l2, fillvalue=None):
         if len(b)>0:
             yield b
 
+def split(l, n):
+    ''' Returns a list of sub-lists of iterator `l` such that each sub-list has 
+    length `n`, except the final sub-list which might be shorter then `n`
+    '''
+    return [l[j:j+n] for j in range(0,len(l),n)]
