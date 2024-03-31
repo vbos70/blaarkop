@@ -18,3 +18,4 @@ pyenv
 /*/py38
 /*/__pycache__
 blmean/blmean_lowlevel.exe
+eqrw/z3py.py
