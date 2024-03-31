@@ -187,3 +187,5 @@ class EqProof():
     def __len__(self):
         return len(self.step)
 
+    def __str__(self):
+        return self.eq_proof_str()
