@@ -9,14 +9,14 @@ class Theory(AttrDict):
     def __init__(self, **kws):
         ''' Create a Theory with the given variables, atoms, and axioms.
 
-        If `kws[variables]` exists, it shall be a lis of `process.Var` objects 
+        If `kws["variables"]` exists, it shall be a lis of `process.Var` objects 
         representing the theory's variables. Otherwise, the theory has no variables. 
 
-        If `kws[atoms]` exists, it shall be a list of `process.Atom` objects
+        If `kws["atoms"]` exists, it shall be a list of `process.Atom` objects
         representing the theory's atoms. Otherwise, the theory has no atoms.
 
-        All other elements in `kws` shall be `process.Equality` objects, representing
-        the theory's axioms.
+        Any other element `kws["ax"]` shall be a `process.Equality` object
+        representing an process equality axioms with name "ax".
 
         `Theory` objects are `AttrDict` objetcs and as such allow attribute acess 
         notation to look up values. If `t : Theory`, then
