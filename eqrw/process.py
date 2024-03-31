@@ -80,15 +80,31 @@ class CoreProcess:
     def __str__(self):
         return str(self.z3expr)
     
+    def vars(self):
+        if self.proc_type == ProcessType.Var:
+            yield self
+        for p in self.sub_procs:
+            for v in p.vars():
+                yield v
+        
+    def atoms(self):
+        if self.proc_type == ProcessType.Atom:
+            yield self
+        for p in self.sub_procs:
+            for a in p.atoms():
+                yield a
+
+
 class Var(CoreProcess):
 
     def __init__(self, a):
         '''Returns an a : Process '''
-        super().__init__(ProcessType.Var, a)
+        super().__init__(ProcessType.Var)
+        self.name = a
         self.z3expr = Const(a, Process)
 
     def __str__(self):
-        return str(self.sub_procs[0])
+        return str(self.name)
 
 def ids(xs, f=lambda x: x):
     if ',' in xs:
@@ -103,13 +119,14 @@ class Atom(CoreProcess):
 
     def __init__(self, a):
         '''Returns an a : Process '''
-        super().__init__(ProcessType.Atom, a)
+        super().__init__(ProcessType.Atom)
+        self.name = a
         self.z3expr = Const(a, Process)
 
     def __str__(self):
-        return str(self.sub_procs[0])
+        return str(self.name)
 
-def Atoms(ats):
+def atoms(ats):
     return ids(ats, Atom)
 
 
@@ -120,11 +137,12 @@ class Action(CoreProcess):
 
     def __init__(self, a):
         '''Returns an Action(a) : Process '''
-        super().__init__(ProcessType.Action, a)
+        super().__init__(ProcessType.Action)
+        self.name = a
         self.z3expr = Const(a, Process)
        
     def __str__(self):
-        return str(self.sub_procs[0])
+        return str(self.name)
 
 
 def actions(acts):
