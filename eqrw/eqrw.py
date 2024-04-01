@@ -1,14 +1,23 @@
 from dataclasses import dataclass
 from itertools import zip_longest
+import time
 
 import z3
 _solver = z3.Solver()
+
+PROOF_TIMEOUT = 2 * 60 # check timeout (in seconds) for a single proof step
+
+def set_timeout(t):
+    global PROOF_TIMEOUT
+    PROOF_TIMEOUT = t
+    z3.set_param(timeout=PROOF_TIMEOUT *1000) # in milliseonds
 
 Expr = z3.AstRef
 is_eq = z3.is_eq
 
 class EQRWException(Exception): pass
 class ProofException(EQRWException): pass
+class ProofTimeoutException(ProofException): pass
 
 
 def z3_prove(formula, *eqs, solver: z3.Solver =_solver):
@@ -18,8 +27,12 @@ def z3_prove(formula, *eqs, solver: z3.Solver =_solver):
     '''
     solver.push()
     solver.add(*eqs)
-    result = not (solver.check(z3.Not(formula)) == z3.sat) 
+    t0 = time.time()
+    result = not (solver.check(z3.Not(formula)) == z3.sat)
+    t1 = time.time() 
     solver.pop()
+    if t1 - t0 > PROOF_TIMEOUT:
+        raise ProofTimeoutException(f"Timeout expired for proof step: {PROOF_TIMEOUT}s < {t1-t0}s")
     return result
 
 @dataclass
