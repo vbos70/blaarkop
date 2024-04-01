@@ -5,6 +5,7 @@ import eqrw
 
 z3_prove = eqrw.z3_prove
 set_timeout = eqrw.set_timeout
+timeout = eqrw.timeout
 
 
 class Theory(AttrDict):
@@ -123,10 +124,8 @@ class EqProof():
 
         try:
             return z3_prove(lhs.z3expr == rhs.z3expr, *z3eqs)
-        except eqrw.ProofTimeoutException as pte:
-            raise EqProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}\n" + str(pte))
         except ProofException as e:
-            raise EqProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}")
+            raise EqProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}") from e
 
 
     def step_is_valid(self, i=None):

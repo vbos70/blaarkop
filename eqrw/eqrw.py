@@ -9,8 +9,13 @@ PROOF_TIMEOUT = 2 * 60 # check timeout (in seconds) for a single proof step
 
 def set_timeout(t):
     global PROOF_TIMEOUT
+    global _solver
     PROOF_TIMEOUT = t
     z3.set_param(timeout=PROOF_TIMEOUT *1000) # in milliseonds
+    _solver = z3.Solver()
+
+def timeout():
+    return PROOF_TIMEOUT
 
 Expr = z3.AstRef
 is_eq = z3.is_eq
@@ -20,17 +25,18 @@ class ProofException(EQRWException): pass
 class ProofTimeoutException(ProofException): pass
 
 
-def z3_prove(formula, *eqs, solver: z3.Solver =_solver):
+def z3_prove(formula, *eqs):
     ''' Returns True if `formula` can be proven by `solver` 
     using the equations in `*eqs` and the built in z3 laws / axioms.
     Returns False otherwise.
     '''
-    solver.push()
-    solver.add(*eqs)
+    global _solver
+    _solver.push()
+    _solver.add(*eqs)
     t0 = time.time()
-    result = not (solver.check(z3.Not(formula)) == z3.sat)
+    result = not (_solver.check(z3.Not(formula)) == z3.sat)
     t1 = time.time() 
-    solver.pop()
+    _solver.pop()
     if t1 - t0 > PROOF_TIMEOUT:
         raise ProofTimeoutException(f"Timeout expired for proof step: {PROOF_TIMEOUT}s < {t1-t0}s")
     return result
