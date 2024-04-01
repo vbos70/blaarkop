@@ -1,7 +1,10 @@
 from utils import *
 from itertools import chain
 from process import *
-from eqrw import z3_prove
+import eqrw 
+
+z3_prove = eqrw.z3_prove
+set_timeout = eqrw.set_timeout
 
 
 class Theory(AttrDict):
@@ -84,8 +87,9 @@ class Theory(AttrDict):
  
         return "\n".join(result)
         
+ProofException = eqrw.ProofException
+class EqProofException(ProofException): pass
 
-class EqProofException(Exception): pass
 
 class EqProof():
     def __init__(self, e: CoreProcess):
@@ -100,6 +104,30 @@ class EqProof():
         self.step = [e]
         self.justification = [None]
         
+
+    def verify_step(self, lhs, rhs, *cs):
+
+        equations = []
+        variables = []
+        for c in cs:
+            if type(c) == ProcessEquality:
+                equations.append(c)
+                variables.extend(v for v in c.lhs.vars())
+                variables.extend(v for v in c.rhs.vars())
+            else:
+                raise EqProofException(f"ProcessEquality expected, got {c} : {type(c)}")
+
+        z3variables = list(set(v.z3expr for v in variables))
+        z3eqs = [ForAll(z3variables, e.z3expr) for e in equations]
+
+
+        try:
+            return z3_prove(lhs.z3expr == rhs.z3expr, *z3eqs)
+        except eqrw.ProofTimeoutException as pte:
+            raise EqProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}\n" + str(pte))
+        except ProofException as e:
+            raise EqProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}")
+
 
     def step_is_valid(self, i=None):
         ''' Checks if step `i` in this proof is valid, meaning it can be proven by z3.
@@ -118,37 +146,20 @@ class EqProof():
             raise EqProofException(f"step index shall less than the len(self): {len(self.step)}, got {i}")
         if i == 0:
             return True
-        return z3_prove(self.step[i-1].z3expr == self.step[i].z3expr, [eq.z3expr for eq in self.justification[i]])
+        return self.verify_step(self.step[i-1], self.step[i], self.justification[i])
     
 
-    def _extend_(self, e, cs):
-        '''Extends this proof by Process `e` and justification `*cs`.
+    def _extend_(self, e, equations):
+        '''Extends this proof by Process `e` and justification `equations`.
 
         Returns `self`.
 
-        Raises a `ProofException` if z3 cannot prove `e` with the justification `*cs`.
+        Raises a `ProofException` if z3 cannot prove `e` with the justification `equations`.
         '''
-        equations = []
-        variables = []
-        for c in cs:
-            if type(c) == Theory:
-                equations.extend(c.values())
-                variables.extend(c.variables())
-            elif type(c) == ProcessEquality:
-                equations.append(c)
-                variables.extend(v for v in c.lhs.vars())
-                variables.extend(v for v in c.rhs.vars())
-            else:
-                raise EqProofException(f"Equation expected, got {c} : {type(c)}")
-
-        z3variables = list(set(v.z3expr for v in variables))
-        z3equations = [ForAll(z3variables, e.z3expr) for e in equations]
-        step = self.step[-1] == e
-
-        if not z3_prove(step.z3expr, z3equations):
+        if not self.verify_step(self.step[-1], e, *equations):
             raise EqProofException(f"Cannot proof {self.step[-1]} == {e} from {', '.join(str(eq) for eq in equations)}")
         self.step.append(e)
-        self.justification.append(cs)
+        self.justification.append(equations)
         return self
 
 

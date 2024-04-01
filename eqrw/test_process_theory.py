@@ -65,11 +65,6 @@ def test_proof():
 
     test_print(prf.eq_proof_str())
 
-    prf = EqProof(zero * (one * one))
-    prf += zero * one, TH1
-    prf += zero, TH1.AX1
-
-    test_print(prf.eq_proof_str())
 
 
 if __name__ == '__main__':
