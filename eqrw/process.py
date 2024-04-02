@@ -4,8 +4,6 @@ from enum import Enum
 
 Process = DeclareSort('Process')
 
-class ProcessException(Exception): pass
-
 ProcessType = Enum('ProcessType', 'Atom Var Action Seq Alt Merge CMerge LMerge')
 ProcessRepr = {
     # process prefix constructors
