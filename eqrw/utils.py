@@ -20,6 +20,16 @@ def split(l, n):
     return [l[j:j+n] for j in range(0,len(l),n)]
 
 
+def unique(it):
+    '''Return unique elements from iterable it, maintaining their relative order.'''
+    seen = set()
+    for e in it:
+        if e not in seen:
+            seen.add(e)
+            yield e
+
+    
+
 class AttrDict(dict):
     '''Dictionaries with (str) keys as attributes.
     
