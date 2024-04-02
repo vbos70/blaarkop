@@ -1,11 +1,64 @@
 from utils import *
 from itertools import chain
 from process import *
-import eqrw 
+import time
 
-z3_prove = eqrw.z3_prove
-set_timeout = eqrw.set_timeout
-timeout = eqrw.timeout
+params = AttrDict()
+
+def solver():
+    global params
+    return params.solver()
+
+def reset_solver():
+    global params
+    params.solver = z3.Solver()
+
+def set_timeout_ms(t):
+    '''Sets the timeout of proof check steps to t milliseconds.'''
+    global params
+    params.PROOF_TIMEOUT = t
+    z3.set_param(timeout=params.PROOF_TIMEOUT)
+    params.solver = z3.Solver()
+
+def set_timeout(t):
+    '''Sets the timeout of proof check steps to t seconds.'''
+    set_timeout_ms(t * 1000)
+
+def timeout_ms():
+    '''Returns the timeout of proof step checks in milliseconds.'''
+    global params
+    return params.PROOF_TIMEOUT
+
+def timeout():
+    '''Returns the timeout of proof step checks in seconds.'''
+    return timeout_ms() / 1000
+
+if 'solver' not in params:
+    set_timeout(2 * 60) # 2 minutes timeout
+    reset_solver()
+
+
+class ProofException(Exception): pass
+class ProofTimeoutException(ProofException): pass
+
+
+def z3_prove(formula, *eqs):
+    ''' Returns True if `formula` can be proven by `solver` 
+    using the equations in `*eqs` and the built in z3 laws / axioms.
+    Returns False otherwise.
+    '''
+    global params
+    s = params.solver
+    s.push()
+    s.add(*eqs)
+    t0 = time.time()
+    result = not (s.check(z3.Not(formula)) == z3.sat)
+    t1 = time.time() 
+    s.pop()
+    if t1 - t0 > timeout():
+        raise ProofTimeoutException(f"Timeout expired for proof step: {timeout()}s < {t1-t0}s")
+    return result
+
 
 
 class Theory(AttrDict):
@@ -88,19 +141,16 @@ class Theory(AttrDict):
  
         return "\n".join(result)
         
-ProofException = eqrw.ProofException
-class EqProofException(ProofException): pass
-
 
 class EqProof():
     def __init__(self, e: CoreProcess):
         ''' Create an equational proof starting with `CoreProcess` `e`.
         Since `e` is the initial step of the proof, its justification is set to `None`.
 
-        If `e` is not of type `CoreProcess`, an `EqProofException` is raised.
+        If `e` is not of type `CoreProcess`, an `ProofException` is raised.
         '''
         if not isinstance(e, CoreProcess):
-            raise EqProofException(f"Expected e : Process, got e : {type(e)}")
+            raise ProofException(f"Expected e : Process, got e : {type(e)}")
         
         self.step = [e]
         self.justification = [None]
@@ -116,7 +166,7 @@ class EqProof():
                 variables.extend(v for v in c.lhs.vars())
                 variables.extend(v for v in c.rhs.vars())
             else:
-                raise EqProofException(f"ProcessEquality expected, got {c} : {type(c)}")
+                raise ProofException(f"ProcessEquality expected, got {c} : {type(c)}")
 
         z3variables = list(set(v.z3expr for v in variables))
         z3eqs = [ForAll(z3variables, e.z3expr) for e in equations]
@@ -125,7 +175,7 @@ class EqProof():
         try:
             return z3_prove(lhs.z3expr == rhs.z3expr, *z3eqs)
         except ProofException as e:
-            raise EqProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}") from e
+            raise ProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}") from e
 
 
     def step_is_valid(self, i=None):
@@ -135,14 +185,14 @@ class EqProof():
 
         If no `i` is given (`i==None`), the last step of the proof is checked.
 
-        An `EqProofException` is raised if `i<0` or `i>=len(self)`. 
+        An `ProofException` is raised if `i<0` or `i>=len(self)`. 
         '''
         if i is None:
             i = len(self.step)-1
         if i < 0:
-            raise EqProofException(f"step index shall be at least 0, got {i}")
+            raise ProofException(f"step index shall be at least 0, got {i}")
         if not i < len(self.step):
-            raise EqProofException(f"step index shall less than the len(self): {len(self.step)}, got {i}")
+            raise ProofException(f"step index shall less than the len(self): {len(self.step)}, got {i}")
         if i == 0:
             return True
         return self.verify_step(self.step[i-1], self.step[i], self.justification[i])
@@ -156,7 +206,7 @@ class EqProof():
         Raises a `ProofException` if z3 cannot prove `e` with the justification `equations`.
         '''
         if not self.verify_step(self.step[-1], e, *equations):
-            raise EqProofException(f"Cannot proof {self.step[-1]} == {e} from {', '.join(str(eq) for eq in equations)}")
+            raise ProofException(f"Cannot proof {self.step[-1]} == {e} from {', '.join(str(eq) for eq in equations)}")
         self.step.append(e)
         self.justification.append(equations)
         return self
@@ -186,13 +236,13 @@ class EqProof():
                                ((" " * indent)+"= {" + ", ".join(str(c) for c in cs if not isinstance(c, Theory)) + "}" for cs in self.justification[1:]),
                                fillvalue=''))
 
-    def __getitem__(self, i):
-        if type(i) == slice:
-            result = EqProof(self[i.start])
-            result.step = self.step[i]
-            result.justification = self.justification[i]
-            return result
-        return EqProof(self.step[i])
+    # def __getitem__(self, i):
+    #     if type(i) == slice:
+    #         result = EqProof(self[i.start])
+    #         result.step = self.step[i]
+    #         result.justification = self.justification[i]
+    #         return result
+    #     return EqProof(self.step[i])
     
     def __len__(self):
         return len(self.step)
