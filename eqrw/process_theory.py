@@ -72,8 +72,8 @@ class Theory(AttrDict):
         If `kws["variables"]` exists, it shall be a lis of `process.Var` objects 
         representing the theory's variables. Otherwise, the theory has no variables. 
 
-        If `kws["atoms"]` exists, it shall be a list of `process.Atom` objects
-        representing the theory's atoms. Otherwise, the theory has no atoms.
+        If `kws["consts"]` exists, it shall be a list of `process.Const` objects
+        representing the theory's constants. Otherwise, the theory has no constants.
 
         Any other element `kws["ax"]` shall be a `process.Equality` object
         representing an process equality axioms with name "ax".
@@ -89,9 +89,9 @@ class Theory(AttrDict):
             del kws['variables']
         
         self._atoms = None
-        if 'atoms' in kws:
-            self._atoms = kws['atoms']
-            del kws['atoms']
+        if 'consts' in kws:
+            self._atoms = kws['consts']
+            del kws['consts']
                 
         super().__init__(**kws)
 
@@ -163,13 +163,13 @@ class EqProof():
         for c in cs:
             if type(c) == ProcessEquality:
                 equations.append(c)
-                variables.extend(v for v in c.lhs.vars())
-                variables.extend(v for v in c.rhs.vars())
+                variables.extend(c.lhs.vars())
+                variables.extend(c.rhs.vars())
             else:
                 raise ProofException(f"ProcessEquality expected, got {c} : {type(c)}")
 
         z3variables = list(set(v.z3expr for v in variables))
-        z3eqs = [ForAll(z3variables, e.z3expr) for e in equations]
+        z3eqs = [z3.ForAll(z3variables, e.z3expr) for e in equations]
 
 
         try:

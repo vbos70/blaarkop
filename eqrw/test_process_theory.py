@@ -6,7 +6,7 @@ from process_theory import *
 def test_process_theory1():
     x, y, z = vars('x, y, z')
 
-    zero, one = atoms('zero, one')
+    zero, one = consts('zero, one')
 
     TH1 = Theory(
         variables = [x,y,z],
@@ -36,7 +36,7 @@ def test_process_theory1():
 def test_proof():
     x, y, z = vars('x, y, z')
 
-    zero, one = atoms('zero, one')
+    zero, one = consts('zero, one')
 
     TH1 = Theory(
         variables = [x,y,z],
@@ -68,7 +68,7 @@ def test_proof():
 @test
 def test_timeout():
 
-    blocked, ready = atoms('blocked, ready')
+    blocked, ready = consts('blocked, ready')
     x, y, z = vars('x, y, z')
 
     TH0 = Theory(

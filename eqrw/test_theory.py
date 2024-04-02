@@ -33,8 +33,7 @@ def test_Theory():
     assert str(T1_T2[2]) == str(T1_T2.T2[0])
     assert str(T1_T2[3]) == str(T1_T2.T2[1])
 
-if __name__ == '__main,__':
-    print('start')
+if __name__ == '__main__':
     run_tests(print_summary_only=True, new_suppress_test_output=False)
     print(test_summary())
 

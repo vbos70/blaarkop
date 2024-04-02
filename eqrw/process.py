@@ -1,14 +1,15 @@
-from z3 import *
-
+import z3
+from utils import unique
 from enum import Enum
 
-Process = DeclareSort('Process')
+Process = z3.DeclareSort('Process')
 
-ProcessType = Enum('ProcessType', 'Atom Var Action Seq Alt Merge CMerge LMerge')
+ProcessType = Enum('ProcessType', 'Const Var RecVar Action Seq Alt Merge CMerge LMerge')
 ProcessRepr = {
     # process prefix constructors
-    ProcessType.Atom: 'Atom',
+    ProcessType.Const: 'Const',
     ProcessType.Var: 'Var',
+    ProcessType.RecVar: 'RecVar',
     ProcessType.Action: 'Action',
     ProcessType.CMerge: 'cmerge',
     ProcessType.LMerge: 'lmerge',
@@ -54,11 +55,13 @@ class ProcessEquality:
 class CoreProcess:
 
     def __init__(self, proc_type, *sub_procs):
-        self.z3expr = None#Const(f'Process({",".join(sub_procs)})', Process)
+        self.z3expr = None
         self.proc_type = proc_type
         self.sub_procs = sub_procs
 
-
+    def __hash__(self):
+        return hash(self.z3expr)
+    
     def __eq__(self, other):
         '''Equality == '''
         return ProcessEquality(self, other)
@@ -78,76 +81,96 @@ class CoreProcess:
     def __str__(self):
         return str(self.z3expr)
     
-    def vars(self):
-        if self.proc_type == ProcessType.Var:
+
+    def enumerate_by_proc_type(self, proc_type):
+        if self.proc_type == proc_type:
             yield self
         for p in self.sub_procs:
-            for v in p.vars():
+            for v in p.enumerate_by_proc_type(proc_type):
                 yield v
         
-    def atoms(self):
-        if self.proc_type == ProcessType.Atom:
-            yield self
-        for p in self.sub_procs:
-            for a in p.atoms():
-                yield a
+    def vars(self):
+        yield from unique(self.enumerate_by_proc_type(ProcessType.Var))
 
 
-class Var(CoreProcess):
+    def recvars(self):
+        yield from unique(self.enumerate_by_proc_type(ProcessType.RecVar))
 
-    def __init__(self, a):
-        '''Returns an a : Process '''
-        super().__init__(ProcessType.Var)
-        self.name = a
-        self.z3expr = Const(a, Process)
 
-    def __str__(self):
-        return str(self.name)
+    def consts(self):
+        yield from unique(self.enumerate_by_proc_type(ProcessType.Const))
+
+
+    def actions(self):
+        yield from unique(self.enumerate_by_proc_type(ProcessType.Action))
 
 def ids(xs, f=lambda x: x):
     if ',' in xs:
         xs = (x.strip() for x in xs.split(','))
     return tuple(f(x) for x in xs)
 
+
+class Const(CoreProcess):
+
+    def __init__(self, a):
+        '''Returns an Const_a : Process '''
+        super().__init__(ProcessType.Const)
+        self.name = a
+        self.z3expr = z3.Const("Const_" + a, Process)
+
+    def __str__(self):
+        return str(self.name)
+
+def consts(ats):
+    return ids(ats, Const)
+
+
+class Var(CoreProcess):
+
+    def __init__(self, a):
+        '''Returns an Var_a : Process '''
+        super().__init__(ProcessType.Var)
+        self.name = a
+        self.z3expr = z3.Const("Var_" + a, Process)
+
+    def __str__(self):
+        return str(self.name)
+
 def vars(vs):
     return ids(vs, Var)
 
 
-class Atom(CoreProcess):
+class RecVar(CoreProcess):
 
     def __init__(self, a):
-        '''Returns an a : Process '''
-        super().__init__(ProcessType.Atom)
+        '''Returns an RecVar_a : Process '''
+        super().__init__(ProcessType.RecVar)
         self.name = a
-        self.z3expr = Const(a, Process)
+        self.z3expr = z3.Const("RecVar_" + a, Process)
 
     def __str__(self):
         return str(self.name)
 
-def atoms(ats):
-    return ids(ats, Atom)
+def recvars(vs):
+    return ids(vs, RecVar)
 
-
-zero = Atom('zero')
-one = Atom('one')
 
 class Action(CoreProcess):
 
     def __init__(self, a):
-        '''Returns an Action(a) : Process '''
+        '''Returns an Action_a : Process '''
         super().__init__(ProcessType.Action)
         self.name = a
-        self.z3expr = Const(a, Process)
+        self.z3expr = z3.Const("Action_" + a, Process)
        
     def __str__(self):
         return str(self.name)
-
 
 def actions(acts):
     return ids(acts, Action)
 
 
-z3Seq = Function('z3Seq', Process, Process, Process)
+z3Seq = z3.Function('z3Seq', Process, Process, Process)
 class Seq(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.Seq, x, y)
@@ -159,7 +182,7 @@ class Seq(CoreProcess):
         return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
     
 
-z3Alt = Function('z3Alt', Process, Process, Process)
+z3Alt = z3.Function('z3Alt', Process, Process, Process)
 class Alt(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.Alt, x, y)
@@ -170,7 +193,7 @@ class Alt(CoreProcess):
                          parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
         return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
 
-z3Merge = Function('z3Merge', Process, Process, Process)
+z3Merge = z3.Function('z3Merge', Process, Process, Process)
 class Merge(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.Merge, x, y)
@@ -181,7 +204,7 @@ class Merge(CoreProcess):
                          parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
         return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
 
-z3CM = Function('z3CM', Process, Process, Process)
+z3CM = z3.Function('z3CM', Process, Process, Process)
 class CM(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.CMerge, x, y)
@@ -191,7 +214,7 @@ class CM(CoreProcess):
         return f"CM({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"
 
 
-z3LM = Function('z3LM', Process, Process, Process)
+z3LM = z3.Function('z3LM', Process, Process, Process)
 class LM(CoreProcess):
     def __init__(self, x, y):
         super().__init__(ProcessType.LMerge, x, y)
