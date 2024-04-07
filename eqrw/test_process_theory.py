@@ -11,7 +11,7 @@ def test_process_theory1():
     TH1 = Theory(
         variables = [x,y,z],
 
-        atoms = [zero, one],
+        consts = [zero, one],
 
         AX1 = zero * x == zero,
         AX2 = one * x == x,
@@ -41,7 +41,7 @@ def test_proof():
     TH1 = Theory(
         variables = [x,y,z],
 
-        atoms = [zero, one],
+        consts = [zero, one],
 
         AX1 = zero * x == zero,
         AX2 = one * x == x,
@@ -72,7 +72,7 @@ def test_timeout():
     x, y, z = vars('x, y, z')
 
     TH0 = Theory(
-    atoms = [blocked, ready],
+    consts = [blocked, ready],
     variables = [x, y, z],
     AX1 = blocked * x == blocked,
     AX2 = ready * x == x,
