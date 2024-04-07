@@ -173,9 +173,11 @@ class EqProof():
 
 
         try:
-            return z3_prove(lhs.z3expr == rhs.z3expr, *z3eqs)
-        except ProofException as e:
-            raise ProofException(f"Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}") from e
+            if z3_prove(lhs.z3expr == rhs.z3expr, *z3eqs):
+                return True
+        except ProofTimeoutException as e:
+            raise ProofException(f"<ProofTimeoutError>: Cannot proof {lhs} == {rhs} within {timeout()}s from {', '.join(str(eq) for eq in equations)}") from e
+        raise ProofException(f"<ProofError>: Cannot proof {lhs} == {rhs} from {', '.join(str(eq) for eq in equations)}")
 
 
     def step_is_valid(self, i=None):
@@ -205,8 +207,7 @@ class EqProof():
 
         Raises a `ProofException` if z3 cannot prove `e` with the justification `equations`.
         '''
-        if not self.verify_step(self.step[-1], e, *equations):
-            raise ProofException(f"Cannot proof {self.step[-1]} == {e} from {', '.join(str(eq) for eq in equations)}")
+        self.verify_step(self.step[-1], e, *equations)
         self.step.append(e)
         self.justification.append(equations)
         return self
