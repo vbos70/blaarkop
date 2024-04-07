@@ -86,8 +86,8 @@ class CoreProcess:
         if self.proc_type == proc_type:
             yield self
         for p in self.sub_procs:
-            for v in p.enumerate_by_proc_type(proc_type):
-                yield v
+            yield from p.enumerate_by_proc_type(proc_type)
+            
         
     def vars(self):
         yield from unique(self.enumerate_by_proc_type(ProcessType.Var))

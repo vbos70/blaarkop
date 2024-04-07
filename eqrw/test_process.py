@@ -4,7 +4,7 @@ from process import *
 @test
 def test_1():
 
-    zero, one = atoms('zero, one')
+    zero, one = consts('zero, one')
     p0 = zero
     test_print(p0)
 
@@ -26,7 +26,7 @@ def test_1():
 
 @test
 def test_2():
-    zero, one = atoms('zero, one')
+    zero, one = consts('zero, one')
     a,b,c = actions('abc')
 
     assert str(a) == 'a'
@@ -40,7 +40,7 @@ def test_2():
 
 @test
 def test_eq():
-    zero, one = atoms('zero, one')
+    zero, one = consts('zero, one')
     a,b,c = actions('abc')
     p = a*b*c*one
     eq = p == a*b*c*one

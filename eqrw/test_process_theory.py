@@ -9,10 +9,6 @@ def test_process_theory1():
     zero, one = consts('zero, one')
 
     TH1 = Theory(
-        variables = [x,y,z],
-
-        consts = [zero, one],
-
         AX1 = zero * x == zero,
         AX2 = one * x == x,
         AX3 = x * one == x,
@@ -27,8 +23,8 @@ def test_process_theory1():
     # Attributre access for axioms:
     assert TH1.AX1 == TH1['AX1']
     assert TH1.AX2 != TH1['AX1']
-    assert len(TH1.variables()) == 3
-    assert len(TH1.atoms()) == 2
+    assert len(TH1.variables()) == 3, f'{len(TH1.variables())} != 3'
+    assert len(TH1.constants()) == 2
     #test_print(TH1)
 
 
@@ -39,10 +35,6 @@ def test_proof():
     zero, one = consts('zero, one')
 
     TH1 = Theory(
-        variables = [x,y,z],
-
-        consts = [zero, one],
-
         AX1 = zero * x == zero,
         AX2 = one * x == x,
         AX3 = x * one == x,
@@ -72,8 +64,6 @@ def test_timeout():
     x, y, z = vars('x, y, z')
 
     TH0 = Theory(
-    consts = [blocked, ready],
-    variables = [x, y, z],
     AX1 = blocked * x == blocked,
     AX2 = ready * x == x,
     AX3 = x * ready == x,
