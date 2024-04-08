@@ -22,7 +22,7 @@ def test_1():
 
     test_print(p * q)
 
-
+    e = Encap(zero, zero * one)
 
 @test
 def test_2():

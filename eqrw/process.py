@@ -4,7 +4,7 @@ from enum import Enum
 
 Process = z3.DeclareSort('Process')
 
-ProcessType = Enum('ProcessType', 'Const Var RecVar Action Seq Alt Merge CMerge LMerge')
+ProcessType = Enum('ProcessType', 'Const Var RecVar Action Seq Alt Merge CMerge LMerge Encap')
 ProcessRepr = {
     # process prefix constructors
     ProcessType.Const: 'Const',
@@ -13,6 +13,7 @@ ProcessRepr = {
     ProcessType.Action: 'Action',
     ProcessType.CMerge: 'cmerge',
     ProcessType.LMerge: 'lmerge',
+    ProcessType.LMerge: 'encap',
 
     # process binary infix operators
     ProcessType.Seq: '*',
@@ -222,3 +223,13 @@ class LM(CoreProcess):
         
     def __str__(self):
         return f"LM({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"
+
+z3Encap = z3.Function('z3Encap', Process, Process, Process)
+class Encap(CoreProcess):
+    def __init__(self, x, y):
+        super().__init__(ProcessType.Encap, x, y)
+        self.z3expr = z3Encap(x.z3expr, y.z3expr)
+        
+    def __str__(self):
+        return f"Encap({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"
+
