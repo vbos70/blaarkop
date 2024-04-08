@@ -38,6 +38,13 @@ def test_2():
     p = a * (b * c)
     assert str(p) == 'a * (b * c)'
 
+    z = Encap(a+b, p)
+    assert str(z) == 'Encap(a + b, a * (b * c))', str(z)
+
+    z = Hide(a+b, p)
+    assert str(z) == 'Hide(a + b, a * (b * c))', str(z)
+
+
 @test
 def test_eq():
     zero, one = consts('zero, one')
