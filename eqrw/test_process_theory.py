@@ -62,7 +62,8 @@ def test_timeout():
 
     blocked, ready = consts('blocked, ready')
     x, y, z = vars('x, y, z')
-
+    xa, xb, xc = actionvars('xa, xb, xc')
+    
     TH0 = Theory(
     AX1 = blocked * x == blocked,
     AX2 = ready * x == x,
@@ -72,10 +73,27 @@ def test_timeout():
     AX6 = x + x == x,
     AX7 = (x + y) + x == x + (y + z),
     AX8 = (x * y) * z == x * (y * z),
-    AX9 = (x + y) * z == x * z + y * z
+    AX9 = (x + y) * z == x * z + y * z,
+
+    # testing action-variables in axioms
+    AX10 = Atom(xa) * ready == Atom(xa) 
     )
 
-    a,b,c = actions('a, b, c')
+    a,b,c = atomic_actions('a, b, c')
+
+    # testing action-variables in proofs
+    prf = EqProof(b * (c * ready))
+    prf += b *c, TH0.AX10
+
+
+    # verifying substitution of action-variables fails
+    # for non-actions
+    try:
+        prf = EqProof(b * (ready * ready))
+        prf += b *ready, TH0.AX10
+    except ProofException as pe:
+        assert str(TH0.AX10) in str(pe)
+        assert str(b * (ready * ready) == b * ready) in str(pe)
 
     # create a process p built up from the actions
     p = a * b * (a + b) * c
@@ -96,6 +114,8 @@ def test_timeout():
     # and that the process is p
     assert len(prf.step) == 1
     assert prf.step[0] == p
+
+
 
 if __name__ == '__main__':
     run_tests(print_summary_only=False, new_suppress_test_output=False)

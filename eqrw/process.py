@@ -1,17 +1,33 @@
 import z3
 from utils import unique
 from enum import Enum
+from itertools import chain
 
 ActionSort = z3.DeclareSort('ActionSort')
+ActionType = Enum('ActionType', 'Const Var')
+
 
 class Action:
 
     def __init__(self, name: str):
         self.name = name
-        self.z3expr = z3.Const(name, ActionSort)
+        self.ac_type = ActionType.Const
+        self.z3expr = z3.Const("Action_" + name, ActionSort)
 
     def __str__(self):
         return self.name
+
+
+class ActionVar(Action):
+
+    def __init__(self, name: str):
+        self.name = name
+        self.ac_type = ActionType.Var
+        self.z3expr = z3.Const("ActionVar_" + name, ActionSort)
+
+    def __str__(self):
+        return self.name
+
 
 def ids(xs, f=lambda x: x):
     if ',' in xs:
@@ -20,6 +36,11 @@ def ids(xs, f=lambda x: x):
 
 def actions(s):
     return ids(s, Action)
+
+
+def actionvars(s):
+    return ids(s, ActionVar)
+
 
 ProcessSort = z3.DeclareSort('Process')
 
@@ -126,7 +147,13 @@ class Process:
         yield from unique(self.enumerate_by_proc_type(ProcessType.Atom))
 
 
+    def actionvars(self):
+        if self.proc_type == ProcessType.Atom and self.name.ac_type == ActionType.Var:
+            yield self.name
+        else:
+            yield from (a for p in self.sub_procs for a in p.actionvars())
 
+            
 class Const(Process):
 
     def __init__(self, a):
@@ -181,6 +208,8 @@ class Atom(Process):
         self.z3expr = z3_Atom(a.z3expr)
        
     def __str__(self):
+        if self.name.ac_type == ActionType.Var:
+            return f'Atom({str(self.name)})'
         return str(self.name)
 
 def atoms(acts):

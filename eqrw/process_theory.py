@@ -139,13 +139,13 @@ class Theory(AttrDict):
         
 
 class EqProof():
-    def __init__(self, e: CoreProcess):
-        ''' Create an equational proof starting with `CoreProcess` `e`.
+    def __init__(self, e: Process):
+        ''' Create an equational proof starting with `Processcess` `e`.
         Since `e` is the initial step of the proof, its justification is set to `None`.
 
-        If `e` is not of type `CoreProcess`, an `ProofException` is raised.
+        If `e` is not of type `Processcess`, an `ProofException` is raised.
         '''
-        if not isinstance(e, CoreProcess):
+        if not isinstance(e, Process):
             raise ProofException(f"Expected e : Process, got e : {type(e)}")
         
         self.step = [e]
@@ -156,16 +156,22 @@ class EqProof():
 
         equations = []
         variables = []
+        action_variables = []
         for c in cs:
             if type(c) == ProcessEquality:
                 equations.append(c)
                 variables.extend(c.lhs.vars())
                 variables.extend(c.rhs.vars())
+                variables.extend(c.lhs.actionvars())
+                variables.extend(c.rhs.actionvars())
+
             else:
                 raise ProofException(f"ProcessEquality expected, got {c} : {type(c)}")
 
         z3variables = list(set(v.z3expr for v in variables))
         z3eqs = [z3.ForAll(z3variables, e.z3expr) for e in equations]
+
+        
 
 
         try:
