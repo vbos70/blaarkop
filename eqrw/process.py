@@ -2,15 +2,36 @@ import z3
 from utils import unique
 from enum import Enum
 
-Process = z3.DeclareSort('Process')
+ActionSort = z3.DeclareSort('ActionSort')
 
-ProcessType = Enum('ProcessType', 'Const Var RecVar Action Seq Alt Merge CMerge LMerge Encap Hide')
+class Action:
+
+    def __init__(self, name: str):
+        self.name = name
+        self.z3expr = z3.Const(name, ActionSort)
+
+    def __str__(self):
+        return self.name
+
+def ids(xs, f=lambda x: x):
+    if ',' in xs:
+        xs = (x.strip() for x in xs.split(','))
+    return tuple(f(x) for x in xs)
+
+def actions(s):
+    return ids(s, Action)
+
+ProcessSort = z3.DeclareSort('Process')
+
+z3_Atom = z3.Function('Atom', ActionSort, ProcessSort)
+
+ProcessType = Enum('ProcessType', 'Const Var RecVar Atom Seq Alt Merge CMerge LMerge Encap Hide')
 ProcessRepr = {
     # process prefix constructors
     ProcessType.Const: 'Const',
     ProcessType.Var: 'Var',
     ProcessType.RecVar: 'RecVar',
-    ProcessType.Action: 'Action',
+    ProcessType.Atom: 'Atom',
     ProcessType.CMerge: 'cmerge',
     ProcessType.LMerge: 'lmerge',
     ProcessType.Encap: 'encap',
@@ -52,9 +73,7 @@ class ProcessEquality:
         return self.lhs.z3expr == self.rhs.z3expr
     
 
-#z3Process = Function('z3Process', Process)
-
-class CoreProcess:
+class Process:
 
     def __init__(self, proc_type, *sub_procs):
         self.z3expr = None
@@ -103,22 +122,18 @@ class CoreProcess:
         yield from unique(self.enumerate_by_proc_type(ProcessType.Const))
 
 
-    def actions(self):
-        yield from unique(self.enumerate_by_proc_type(ProcessType.Action))
-
-def ids(xs, f=lambda x: x):
-    if ',' in xs:
-        xs = (x.strip() for x in xs.split(','))
-    return tuple(f(x) for x in xs)
+    def atoms(self):
+        yield from unique(self.enumerate_by_proc_type(ProcessType.Atom))
 
 
-class Const(CoreProcess):
+
+class Const(Process):
 
     def __init__(self, a):
         '''Returns an Const_a : Process '''
         super().__init__(ProcessType.Const)
         self.name = a
-        self.z3expr = z3.Const("Const_" + a, Process)
+        self.z3expr = z3.Const("Const_" + a, ProcessSort)
 
     def __str__(self):
         return str(self.name)
@@ -127,13 +142,13 @@ def consts(ats):
     return ids(ats, Const)
 
 
-class Var(CoreProcess):
+class Var(Process):
 
     def __init__(self, a):
         '''Returns an Var_a : Process '''
         super().__init__(ProcessType.Var)
         self.name = a
-        self.z3expr = z3.Const("Var_" + a, Process)
+        self.z3expr = z3.Const("Var_" + a, ProcessSort)
 
     def __str__(self):
         return str(self.name)
@@ -142,13 +157,13 @@ def vars(vs):
     return ids(vs, Var)
 
 
-class RecVar(CoreProcess):
+class RecVar(Process):
 
     def __init__(self, a):
         '''Returns an RecVar_a : Process '''
         super().__init__(ProcessType.RecVar)
         self.name = a
-        self.z3expr = z3.Const("RecVar_" + a, Process)
+        self.z3expr = z3.Const("RecVar_" + a, ProcessSort)
 
     def __str__(self):
         return str(self.name)
@@ -157,23 +172,26 @@ def recvars(vs):
     return ids(vs, RecVar)
 
 
-class Action(CoreProcess):
+class Atom(Process):
 
-    def __init__(self, a):
-        '''Returns an Action_a : Process '''
-        super().__init__(ProcessType.Action)
+    def __init__(self, a: Action):
+        '''Returns an Atom(a) : Process '''
+        super().__init__(ProcessType.Atom)
         self.name = a
-        self.z3expr = z3.Const("Action_" + a, Process)
+        self.z3expr = z3_Atom(a.z3expr)
        
     def __str__(self):
         return str(self.name)
 
-def actions(acts):
-    return ids(acts, Action)
+def atoms(acts):
+    return ids(acts, Atom)
+
+def atomic_actions(s):
+    return tuple(Atom(a) for a in actions(s))
 
 
-z3Seq = z3.Function('z3Seq', Process, Process, Process)
-class Seq(CoreProcess):
+z3Seq = z3.Function('z3Seq', ProcessSort, ProcessSort, ProcessSort)
+class Seq(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.Seq, x, y)
         self.z3expr = z3Seq(x.z3expr, y.z3expr)
@@ -184,8 +202,8 @@ class Seq(CoreProcess):
         return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
     
 
-z3Alt = z3.Function('z3Alt', Process, Process, Process)
-class Alt(CoreProcess):
+z3Alt = z3.Function('z3Alt', ProcessSort, ProcessSort, ProcessSort)
+class Alt(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.Alt, x, y)
         self.z3expr = z3Alt(x.z3expr, y.z3expr)
@@ -195,8 +213,8 @@ class Alt(CoreProcess):
                          parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
         return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
 
-z3Merge = z3.Function('z3Merge', Process, Process, Process)
-class Merge(CoreProcess):
+z3Merge = z3.Function('z3Merge', ProcessSort, ProcessSort, ProcessSort)
+class Merge(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.Merge, x, y)
         self.z3expr = z3Merge(x.z3expr, y.z3expr)
@@ -206,8 +224,8 @@ class Merge(CoreProcess):
                          parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
         return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
 
-z3CM = z3.Function('z3CM', Process, Process, Process)
-class CM(CoreProcess):
+z3CM = z3.Function('z3CM', ProcessSort, ProcessSort, ProcessSort)
+class CM(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.CMerge, x, y)
         self.z3expr = z3CM(x.z3expr, y.z3expr)
@@ -216,8 +234,8 @@ class CM(CoreProcess):
         return f"CM({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"
 
 
-z3LM = z3.Function('z3LM', Process, Process, Process)
-class LM(CoreProcess):
+z3LM = z3.Function('z3LM', ProcessSort, ProcessSort, ProcessSort)
+class LM(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.LMerge, x, y)
         self.z3expr = z3LM(x.z3expr, y.z3expr)
@@ -225,8 +243,8 @@ class LM(CoreProcess):
     def __str__(self):
         return f"LM({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"
 
-z3Encap = z3.Function('z3Encap', Process, Process, Process)
-class Encap(CoreProcess):
+z3Encap = z3.Function('z3Encap', ProcessSort, ProcessSort, ProcessSort)
+class Encap(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.Encap, x, y)
         self.z3expr = z3Encap(x.z3expr, y.z3expr)
@@ -234,8 +252,8 @@ class Encap(CoreProcess):
     def __str__(self):
         return f"Encap({str(self.sub_procs[0])}, {str(self.sub_procs[1])})"
 
-z3Hide = z3.Function('z3Hide', Process, Process, Process)
-class Hide(CoreProcess):
+z3Hide = z3.Function('z3Hide', ProcessSort, ProcessSort, ProcessSort)
+class Hide(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.Hide, x, y)
         self.z3expr = z3Hide(x.z3expr, y.z3expr)
