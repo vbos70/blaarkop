@@ -46,7 +46,7 @@ ProcessSort = z3.DeclareSort('Process')
 
 z3_Atom = z3.Function('Atom', ActionSort, ProcessSort)
 
-ProcessType = Enum('ProcessType', 'Const Var RecVar Atom Seq Alt Merge CMerge LMerge Encap Hide')
+ProcessType = Enum('ProcessType', 'Const Var RecVar Atom Seq Alt Exc Merge CMerge LMerge Encap Hide')
 ProcessRepr = {
     # process prefix constructors
     ProcessType.Const: 'Const',
@@ -61,6 +61,7 @@ ProcessRepr = {
     # process binary infix operators
     ProcessType.Seq: '*',
     ProcessType.Alt: '+',
+    ProcessType.Exc: '-',
     ProcessType.Merge: '|'
 }
 
@@ -115,6 +116,10 @@ class Process:
     def __add__(self, other):
         ''' Alt + '''
         return Alt(self, other)
+
+    def __sub__(self, other):
+        ''' Exc - '''
+        return Exc(self, other)
 
     def __or__(self, other):
         ''' Merge | '''
@@ -236,6 +241,17 @@ class Alt(Process):
     def __init__(self, x, y):
         super().__init__(ProcessType.Alt, x, y)
         self.z3expr = z3Alt(x.z3expr, y.z3expr)
+
+    def __str__(self):
+        sub_proc_strs = [parenthesize_process_in_context(self.sub_procs[0], self, strict=True),
+                         parenthesize_process_in_context(self.sub_procs[1], self, strict=False)]
+        return sub_proc_strs[0] + f' {ProcessRepr[self.proc_type]} ' + sub_proc_strs[1]
+
+z3Exc = z3.Function('z3Exc', ProcessSort, ProcessSort, ProcessSort)
+class Exc(Process):
+    def __init__(self, x, y):
+        super().__init__(ProcessType.Exc, x, y)
+        self.z3expr = z3Exc(x.z3expr, y.z3expr)
 
     def __str__(self):
         sub_proc_strs = [parenthesize_process_in_context(self.sub_procs[0], self, strict=True),

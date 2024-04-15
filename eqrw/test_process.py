@@ -76,6 +76,29 @@ def test_eq():
     assert str(eq) == str(p) + ' == ' + str(p)
     
     
+@test
+def test_2():
+    zero, one = consts('zero, one')
+    a,b,c = atomic_actions('abc')
+
+    p = a * zero
+    q = b * one
+
+    r = p - q
+
+    assert str(r) == 'a * zero - b * one'
+
+    s = (p + p) - q
+    assert str(s) == a * zero + a * zero - b * one
+
+    s = (p - a) - q
+    assert str(s) == 'a * zero - a - b * one'
+
+
+    s = p - (a - q)
+    assert str(s) == 'a * zero - (a - b * one)'
+
+
 if __name__ == '__main__':
     run_tests(print_summary_only=False, new_suppress_test_output=True)
     print(test_summary())
