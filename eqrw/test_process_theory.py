@@ -27,7 +27,41 @@ def test_process_theory1():
     assert len(TH1.constants()) == 2
     #test_print(TH1)
 
+@test
+def test_process_theory2():
+    x, y, z = vars('x, y, z')
 
+    zero, one = consts('zero, one')
+
+    TH1 = Theory(
+        AX1 = zero * x == zero,
+        AX2 = one * x == x)
+    
+    TH2 = TH1 + Theory(
+        AX3 = x * one == x,
+        AX4 = x + zero == x,
+        AX5 = x + y == y + x)
+    
+    TH3 = Theory(
+        AX6 = x + x == x,
+        AX7 = (x + y) + x == x + (y + z),
+        AX8 = (x * y) * z == x * (y * z),
+        AX9 = (x + y) * z == x * z + y * z
+        ) + TH2
+    
+    # Attributre access for axioms:
+    assert TH3.AX1 == TH3['AX1']
+    assert TH3.AX2 != TH3['AX1']
+    assert len(TH3.variables()) == 3, f'{len(TH3.variables())} != 3'
+    assert len(TH3.constants()) == 2
+    #test_print(TH1)
+
+
+    TH4 = TH3 + Theory(
+        AX6 = y + y == y,
+        )
+    assert str(TH4.AX6) == 'y + y == y'
+    assert str(TH3.AX6) == 'x + x == x'
 @test
 def test_proof():
     x, y, z = vars('x, y, z')

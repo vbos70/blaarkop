@@ -94,6 +94,13 @@ class Theory(AttrDict):
         super().__init__(**kws)
 
 
+    def __add__(self, other):
+        t = Theory(**self)
+        t.update(other)
+        return t
+    
+
+
     def compute_variables(self):
         return unique(v for eq in self.values()
                       for v in chain (eq.lhs.vars(), eq.rhs.vars()))
