@@ -20,6 +20,24 @@ def test_op_order():
     assert op_order.And < op_order.Xor
 
 
+
+@test
+def test_comparison():
+    x = Expression('x')
+    y = Expression('y')
+    z = Expression('z')
+
+    e1 = x<y
+    assert str(e1) == 'x<y'
+
+    e2 = y<z
+    assert str(e2) == 'y<z'
+
+    # Strange behaviour for changed comparisons
+    e3 = x<y<z
+    assert str(e3) == 'y<z'
+    # Python translates 'x<y<z' into the same bytecode as 'x<y and y<z'
+
 @test
 def test_add_op():
     x = Expression('x')
@@ -45,8 +63,8 @@ def test_add_op():
     e = x**y**z
     assert str(e) == 'x**y**z', str(e)
 
-    ops = '+,-,*,/,//,%,**,@,&,|,^'.split(',')
-
+    ops = '+,-,*,/,//,%,**,@,<<,>>,&,^,|,<,<=,==,!=,>=,>'.split(',')
+    compare_ops = '<,<=,==,!=,>=,>'.split(',')
     assoc_left = {
         '+': True,
         '-': True,
@@ -56,50 +74,71 @@ def test_add_op():
         '%': True,
         '**': False,
         '@': True,
+        '<<': True,
+        '>>': True,
         '&': True,
+        '^': True,
         '|': True,
-        '^': True
+        '<': True,
+        '<=': True,
+        '==': True,
+        '!=': True,
+        '>=': True,
+        '>': True,
     }
 
     prec = {
-        '+': 2,
-        '-': 2,
+        '**': 0,
         '*': 1,
+        '@': 1,
         '/': 1,
         '//': 1,
         '%': 1,
-        '**': 0,
-        '@': 1,
-        '&': 3,
-        '|': 5,
-        '^': 4
+        '+': 2,
+        '-': 2,
+        '<<': 3,
+        '>>' : 3,
+        '&': 4,
+        '^': 5,
+        '|': 6,
+        '<': 7,
+        '<=': 7,
+        '==': 7,
+        '!=': 7,
+        '>=': 7,
+        '>': 7
+
     }
     errors = 0
     for op1 in ops:
+        print(op1, end=': ', flush=True)
         for op2 in ops:
+            print(op2, end=', ', flush=True)
             if errors > 0:
                 continue
             try:
                 d = AttrDict(s = f'x{op1}y{op2}z',
-                             sl = f'(x{op1}y){op2}z',
-                             sr = f'x{op1}(y{op2}z)')
+                             sl = f'(x{op1}y){op2}z' if op1 not in compare_ops else None,
+                             sr = f'x{op1}(y{op2}z)' if op2 not in compare_ops else None)                
                 e = eval(d.s)
-                el = eval(d.sl)
-                er = eval(d.sr)
+                el = eval(d.sl) if d.sl is not None else None
+                er = eval(d.sr) if d.sr is not None else None
 
-                if prec[op1]<prec[op2]:
+                if el is not None and prec[op1]<prec[op2]:
                     assert str(e) == str(el)
-                elif prec[op1]>prec[op2]:
+                elif er is not None and prec[op1]>prec[op2]:
                     assert str(e) == str(er)
                 else:
-                    if assoc_left[op1]:
+                    if el is not None and assoc_left[op1]:
                         assert str(e) == str(el), f'{str(e)}=={str(el)}'
-                    else:
-                        assert str(e) == str(er)
+                    elif er is not None:
+                        assert str(e) == str(er), f'{str(e)}=={str(el)}'
             except TypeError as te:
-                test_print(te)
-                test_print(f'op1={op1}, op2={op2}')
+                test_print("ERROR:", te)
+                test_print(f'ERROR: op1={op1}, op2={op2}')
+                test_print(f'{d.s}, {d.sl}, {d.sr}')
                 errors += 1
+        print()
 
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)

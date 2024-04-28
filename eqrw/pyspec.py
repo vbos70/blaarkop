@@ -1,6 +1,8 @@
 from enum import Enum
 from utils import AttrDict
 
+# Future:
+# - here is an alternative to define new operators: https://code.activestate.com/recipes/384122/
 
 # See, e.g., https://pythongeeks.org/python-operator-precedence/
 op_order = AttrDict(
@@ -13,9 +15,17 @@ op_order = AttrDict(
     Mod = 1,
     Add = 2,
     Sub = 2,
-    And = 3,
-    Xor = 4,
-    Or = 5,
+    LT = 3,
+    LE = 3,
+    EQ = 3,
+    NE = 3,
+    GE = 3,
+    GT = 3,
+    LShift = 4,
+    RShift = 4,
+    And = 5,
+    Xor = 6,
+    Or = 7,
 )
 
 
@@ -23,6 +33,7 @@ class Expression:
 
 
     prec = op_order.Noop
+    is_assoc = True
     assoc_left = True
     op = None
 
@@ -78,6 +89,12 @@ class Expression:
     def __sub__(self, other):
         return self.mk_operator(other, Sub)
 
+    def __lshift__(self, other):
+        return self.mk_operator(other, LShift)
+    
+    def __rshift__(self, other):
+        return self.mk_operator(other, RShift)
+    
     def __and__(self, other):
         return self.mk_operator(other, And)
 
@@ -87,6 +104,26 @@ class Expression:
     def __or__(self, other):
         return self.mk_operator(other, Or)
 
+
+    # comparison operators
+
+    def __lt__(self, other):
+        return self.mk_operator(other, LT)
+
+    def __le__(self, other):
+        return self.mk_operator(other, LE)
+
+    def __eq__(self, other):
+        return self.mk_operator(other, EQ)
+
+    def __ne__(self, other):
+        return self.mk_operator(other, NE)
+
+    def __ge__(self, other):
+        return self.mk_operator(other, GE)
+
+    def __gt__(self, other):
+        return self.mk_operator(other, GT)
 
 class Mul(Expression):
 
@@ -159,6 +196,88 @@ class Pow(Expression):
 
     def __init__(self, x, y):
         super().__init__(x, y)
+
+
+class LShift(Expression):
+
+    prec = op_order.LShift
+    assoc_left = True
+    is_assoc = False
+    op = '<<'
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+class RShift(Expression):
+
+    prec = op_order.RShift
+    assoc_left = True
+    is_assoc = False
+    op = '>>'
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+class LT(Expression):
+
+    prec = op_order.LT
+    assoc_left = True
+    is_assoc = False
+    op = '<'
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+class LE(Expression):
+
+    prec = op_order.LE
+    assoc_left = True
+    is_assoc = False
+    op = '<='
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+class EQ(Expression):
+
+    prec = op_order.EQ
+    assoc_left = True
+    is_assoc = False
+    op = '=='
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+class NE(Expression):
+
+    prec = op_order.NE
+    assoc_left = True
+    is_assoc = False
+    op = '!='
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+class GE(Expression):
+
+    prec = op_order.GE
+    assoc_left = True
+    is_assoc = False
+    op = '>='
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+class GT(Expression):
+
+    prec = op_order.GT
+    assoc_left = True
+    is_assoc = False
+    op = '>'
+
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
 
 class And(Expression):
 
