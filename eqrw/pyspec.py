@@ -126,145 +126,34 @@ class Expression:
         return self.mk_operator(other, GT)
 
 
-class Mul(Expression):
+def BinOp(op_order=op_order.Noop, assoc=True, is_left_assoc=True, symbol=None):
+    '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
 
-    prec = op_order.Mul
-    assoc_left = True
-    op = '*'
+    class Binop(Expression):
 
-
-class MatMul(Expression):
-
-    prec = op_order.MatMul
-    assoc_left = True
-    op = '@'
-
-
-class TrueDiv(Expression):
-
-    prec = op_order.TrueDiv
-    assoc_left = True
-    op = '/'
-
-
-class FloorDiv(Expression):
-
-    prec = op_order.FloorDiv
-    assoc_left = True
-    op = '//'
-
-
-class Mod(Expression):
-
-    prec = op_order.Mod
-    assoc_left = True
-    op = '%'
-
-
-class Add(Expression):
-
-    prec = op_order.Add
-    assoc_left = True
-    op = '+'
-
-
-class Sub(Expression):
-
-    prec = op_order.Sub
-    assoc_left = True
-    op = '-'
-
-
-class Pow(Expression):
-
-    prec = op_order.Pow
-    assoc_left = False
-    op = '**'
-
-
-class LShift(Expression):
-
-    prec = op_order.LShift
-    assoc_left = True
-    is_assoc = False
-    op = '<<'
-
-
-class RShift(Expression):
-
-    prec = op_order.RShift
-    assoc_left = True
-    is_assoc = False
-    op = '>>'
-
-
-class LT(Expression):
-
-    prec = op_order.LT
-    assoc_left = True
-    is_assoc = False
-    op = '<'
-
-
-class LE(Expression):
-
-    prec = op_order.LE
-    assoc_left = True
-    is_assoc = False
-    op = '<='
-
-
-class EQ(Expression):
-
-    prec = op_order.EQ
-    assoc_left = True
-    is_assoc = False
-    op = '=='
-
-
-class NE(Expression):
-
-    prec = op_order.NE
-    assoc_left = True
-    is_assoc = False
-    op = '!='
-
-
-class GE(Expression):
-
-    prec = op_order.GE
-    assoc_left = True
-    is_assoc = False
-    op = '>='
-
-
-class GT(Expression):
-
-    prec = op_order.GT
-    assoc_left = True
-    is_assoc = False
-    op = '>'
-
-
-class And(Expression):
-
-    prec = op_order.And
-    assoc_left = True
-    op = '&'
-
-
-class Xor(Expression):
+        prec = op_order
+        is_assoc = assoc
+        assoc_left = is_left_assoc
+        op = symbol
     
-    prec = op_order.Xor
-    assoc_left = True
-    op = '^'
+    return Binop
 
-
-class Or(Expression):
-
-    prec = op_order.Or
-    assoc_left = True
-    op = '|'
-
-
-
+Mul = BinOp(op_order=op_order.Mul, assoc=True, is_left_assoc=True, symbol='*')
+MatMul = BinOp(op_order=op_order.MatMul, assoc=True, is_left_assoc=True,symbol='@')
+TrueDiv = BinOp(op_order=op_order.TrueDiv, assoc=True, is_left_assoc=True,symbol='/')
+FloorDiv = BinOp(op_order=op_order.FloorDiv, assoc=True, is_left_assoc=True,symbol='//')
+Mod = BinOp(op_order=op_order.Mod, assoc=True, is_left_assoc=True,symbol='%')
+Add = BinOp(op_order=op_order.Add, assoc=True, is_left_assoc=True,symbol='+')
+Sub = BinOp(op_order=op_order.Sub, assoc=True, is_left_assoc=True,symbol='-')
+Pow = BinOp(op_order=op_order.Pow, assoc=True, is_left_assoc=False,symbol='**')
+LShift = BinOp(op_order=op_order.LShift, assoc=False, is_left_assoc=True,symbol='<<')
+RShift = BinOp(op_order=op_order.RShift, assoc=False, is_left_assoc=True,symbol='>>')
+LT = BinOp(op_order=op_order.LT, assoc=False, is_left_assoc=True,symbol='<')
+LE = BinOp(op_order=op_order.LE, assoc=False, is_left_assoc=True,symbol='<=')
+EQ = BinOp(op_order=op_order.EQ, assoc=False, is_left_assoc=True,symbol='==')
+NE = BinOp(op_order=op_order.NE, assoc=False, is_left_assoc=True,symbol='!=')
+GE = BinOp(op_order=op_order.GE, assoc=False, is_left_assoc=True,symbol='>=')
+GT = BinOp(op_order=op_order.GT, assoc=False, is_left_assoc=True,symbol='>')
+And = BinOp(op_order=op_order.And, assoc=False, is_left_assoc=True,symbol='&')
+Xor = BinOp(op_order=op_order.Xor, assoc=False, is_left_assoc=True,symbol='^')
+Or = BinOp(op_order=op_order.Or, assoc=False, is_left_assoc=True,symbol='|')
