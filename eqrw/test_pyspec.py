@@ -136,5 +136,38 @@ def test_add_op():
                 errors += 1
         print()
 
+
+@test
+def test_make_class():
+
+    A = make_sort_expression('A')
+    a,b,c = A.mk_atoms('a,b,c')
+    assert str(a) == 'a'
+
+    e_A = a + b - c
+    assert str(e_A) == 'a+b-c'
+
+    B = make_sort_expression('B')
+    d,e,f = B.mk_atoms('d,e,f')
+
+    e_B = d + e + f
+    assert str(e_B) == 'd+e+f'
+
+    assert issubclass(type(a), A)
+    assert not issubclass(type(a), B)
+    
+
+    assert str(a+b-c) == str((a+b)-c)
+    assert str(a**b**c) == str(a**(b**c))
+
+
+    assert str(d+e-f) == str((d+e)-f)
+    assert str(d**e**f) == str(d**(e**f))
+
+    try:
+        assert str(a+(d*f)) == 's+d*f'
+    except TypeError as te:
+        assert str(te) == "Operand d*f has incorrect type. Expected type: A_Expression"
+
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)
