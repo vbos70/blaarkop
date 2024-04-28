@@ -125,14 +125,13 @@ class Expression:
     def __gt__(self, other):
         return self.mk_operator(other, GT)
 
+
 class Mul(Expression):
 
     prec = op_order.Mul
     assoc_left = True
     op = '*'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class MatMul(Expression):
 
@@ -140,8 +139,6 @@ class MatMul(Expression):
     assoc_left = True
     op = '@'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class TrueDiv(Expression):
 
@@ -149,8 +146,6 @@ class TrueDiv(Expression):
     assoc_left = True
     op = '/'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class FloorDiv(Expression):
 
@@ -158,8 +153,6 @@ class FloorDiv(Expression):
     assoc_left = True
     op = '//'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class Mod(Expression):
 
@@ -167,8 +160,6 @@ class Mod(Expression):
     assoc_left = True
     op = '%'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class Add(Expression):
 
@@ -176,8 +167,6 @@ class Add(Expression):
     assoc_left = True
     op = '+'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class Sub(Expression):
 
@@ -185,17 +174,12 @@ class Sub(Expression):
     assoc_left = True
     op = '-'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class Pow(Expression):
 
     prec = op_order.Pow
     assoc_left = False
     op = '**'
-
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 
 class LShift(Expression):
@@ -205,8 +189,6 @@ class LShift(Expression):
     is_assoc = False
     op = '<<'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class RShift(Expression):
 
@@ -215,8 +197,6 @@ class RShift(Expression):
     is_assoc = False
     op = '>>'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class LT(Expression):
 
@@ -225,8 +205,6 @@ class LT(Expression):
     is_assoc = False
     op = '<'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class LE(Expression):
 
@@ -235,8 +213,6 @@ class LE(Expression):
     is_assoc = False
     op = '<='
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class EQ(Expression):
 
@@ -245,8 +221,6 @@ class EQ(Expression):
     is_assoc = False
     op = '=='
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class NE(Expression):
 
@@ -255,8 +229,6 @@ class NE(Expression):
     is_assoc = False
     op = '!='
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class GE(Expression):
 
@@ -265,8 +237,6 @@ class GE(Expression):
     is_assoc = False
     op = '>='
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class GT(Expression):
 
@@ -275,9 +245,6 @@ class GT(Expression):
     is_assoc = False
     op = '>'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
-
 
 class And(Expression):
 
@@ -285,8 +252,6 @@ class And(Expression):
     assoc_left = True
     op = '&'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class Xor(Expression):
     
@@ -294,17 +259,12 @@ class Xor(Expression):
     assoc_left = True
     op = '^'
 
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 class Or(Expression):
 
     prec = op_order.Or
     assoc_left = True
     op = '|'
-
-    def __init__(self, x, y):
-        super().__init__(x, y)
 
 
 
