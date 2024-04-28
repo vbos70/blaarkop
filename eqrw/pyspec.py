@@ -6,7 +6,7 @@ from utils import AttrDict
 
 # See, e.g., https://pythongeeks.org/python-operator-precedence/
 op_order = AttrDict(
-    Noop = -1,
+    Noop = -1, # used for atomic (unstructured) expressions
     Pow = 0,
     Mul = 1,
     MatMul = 1,
@@ -33,7 +33,6 @@ class Expression:
 
 
     prec = op_order.Noop
-    is_assoc = True
     assoc_left = True
     op = None
 
@@ -126,34 +125,38 @@ class Expression:
         return self.mk_operator(other, GT)
 
 
-def BinOp(op_order=op_order.Noop, assoc=True, is_left_assoc=True, symbol=None):
+def BinOp(op_order=op_order.Noop, is_left_assoc=True, symbol=None):
     '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
 
     class Binop(Expression):
 
         prec = op_order
-        is_assoc = assoc
         assoc_left = is_left_assoc
         op = symbol
     
     return Binop
 
-Mul = BinOp(op_order=op_order.Mul, assoc=True, is_left_assoc=True, symbol='*')
-MatMul = BinOp(op_order=op_order.MatMul, assoc=True, is_left_assoc=True,symbol='@')
-TrueDiv = BinOp(op_order=op_order.TrueDiv, assoc=True, is_left_assoc=True,symbol='/')
-FloorDiv = BinOp(op_order=op_order.FloorDiv, assoc=True, is_left_assoc=True,symbol='//')
-Mod = BinOp(op_order=op_order.Mod, assoc=True, is_left_assoc=True,symbol='%')
-Add = BinOp(op_order=op_order.Add, assoc=True, is_left_assoc=True,symbol='+')
-Sub = BinOp(op_order=op_order.Sub, assoc=True, is_left_assoc=True,symbol='-')
-Pow = BinOp(op_order=op_order.Pow, assoc=True, is_left_assoc=False,symbol='**')
-LShift = BinOp(op_order=op_order.LShift, assoc=False, is_left_assoc=True,symbol='<<')
-RShift = BinOp(op_order=op_order.RShift, assoc=False, is_left_assoc=True,symbol='>>')
-LT = BinOp(op_order=op_order.LT, assoc=False, is_left_assoc=True,symbol='<')
-LE = BinOp(op_order=op_order.LE, assoc=False, is_left_assoc=True,symbol='<=')
-EQ = BinOp(op_order=op_order.EQ, assoc=False, is_left_assoc=True,symbol='==')
-NE = BinOp(op_order=op_order.NE, assoc=False, is_left_assoc=True,symbol='!=')
-GE = BinOp(op_order=op_order.GE, assoc=False, is_left_assoc=True,symbol='>=')
-GT = BinOp(op_order=op_order.GT, assoc=False, is_left_assoc=True,symbol='>')
-And = BinOp(op_order=op_order.And, assoc=False, is_left_assoc=True,symbol='&')
-Xor = BinOp(op_order=op_order.Xor, assoc=False, is_left_assoc=True,symbol='^')
-Or = BinOp(op_order=op_order.Or, assoc=False, is_left_assoc=True,symbol='|')
+Mul = BinOp(op_order=op_order.Mul, is_left_assoc=True, symbol='*')
+MatMul = BinOp(op_order=op_order.MatMul, is_left_assoc=True,symbol='@')
+TrueDiv = BinOp(op_order=op_order.TrueDiv, is_left_assoc=True,symbol='/')
+FloorDiv = BinOp(op_order=op_order.FloorDiv, is_left_assoc=True,symbol='//')
+Mod = BinOp(op_order=op_order.Mod, is_left_assoc=True,symbol='%')
+
+Add = BinOp(op_order=op_order.Add, is_left_assoc=True,symbol='+')
+Sub = BinOp(op_order=op_order.Sub, is_left_assoc=True,symbol='-')
+
+Pow = BinOp(op_order=op_order.Pow, is_left_assoc=False,symbol='**')
+
+LShift = BinOp(op_order=op_order.LShift, is_left_assoc=True,symbol='<<')
+RShift = BinOp(op_order=op_order.RShift, is_left_assoc=True,symbol='>>')
+
+LT = BinOp(op_order=op_order.LT, is_left_assoc=True,symbol='<')
+LE = BinOp(op_order=op_order.LE, is_left_assoc=True,symbol='<=')
+EQ = BinOp(op_order=op_order.EQ, is_left_assoc=True,symbol='==')
+NE = BinOp(op_order=op_order.NE, is_left_assoc=True,symbol='!=')
+GE = BinOp(op_order=op_order.GE, is_left_assoc=True,symbol='>=')
+GT = BinOp(op_order=op_order.GT, is_left_assoc=True,symbol='>')
+
+And = BinOp(op_order=op_order.And, is_left_assoc=True,symbol='&')
+Xor = BinOp(op_order=op_order.Xor, is_left_assoc=True,symbol='^')
+Or = BinOp(op_order=op_order.Or, is_left_assoc=True,symbol='|')
