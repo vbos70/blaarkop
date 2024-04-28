@@ -23,10 +23,8 @@ def test_op_order():
 
 @test
 def test_comparison():
-    x = Expression('x')
-    y = Expression('y')
-    z = Expression('z')
-
+    x,y,z = mk_atoms('x, y, z')
+ 
     e1 = x<y
     assert str(e1) == 'x<y'
 
@@ -40,9 +38,7 @@ def test_comparison():
 
 @test
 def test_add_op():
-    x = Expression('x')
-    y = Expression('y')
-    z = Expression('z')
+    x,y,z = mk_atoms('x, y, z')
 
     e = x + y + z
     assert e.assoc_left

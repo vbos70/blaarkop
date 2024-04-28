@@ -30,6 +30,8 @@ op_order = AttrDict(
 
 
 class Expression:
+    '''Base class of Expressions. Do not instantiate this class directly. Instead use sub-classes of Expression to create
+    specialized Expression objects.'''
 
 
     prec = op_order.Noop
@@ -124,6 +126,11 @@ class Expression:
     def __gt__(self, other):
         return self.mk_operator(other, GT)
 
+class Atom(Expression): pass
+
+def mk_atoms(names: str) -> Atom:
+    '''Splits the names string by `,` and creates an Atom for each sub-string. Returns a tuple of the created Atoms.'''
+    return (Atom(name.strip()) for name in names.split(','))
 
 def BinOp(op_order=op_order.Noop, is_left_assoc=True, symbol=None):
     '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
