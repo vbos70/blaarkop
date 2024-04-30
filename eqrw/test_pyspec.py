@@ -165,9 +165,9 @@ def test_make_class():
     assert str(d**e**f) == str(d**(e**f))
 
     try:
-        assert str(a+(d*f)) == 's+d*f'
+        assert str(a+(d*f)) == 'e+d*f'
     except TypeError as te:
-        assert str(te) == "Operand d*f has incorrect type. Expected same type as a: A_Expression"
-
+        assert str(te) == "Operands of + operator have incompatible types: 'a: A_Atom' versus 'd*f: B_Mul'"
+        
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)
