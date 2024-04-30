@@ -195,7 +195,7 @@ def make_sort_expression(sortname):
     )
 
 
-    class Expression:
+    class SortExpression:
         '''Base class of Expressions. Do not instantiate this class directly. Instead use sub-classes of Expression to create
         specialized Expression objects.'''
 
@@ -227,9 +227,9 @@ def make_sort_expression(sortname):
 
 
         def mk_operator(self, other, op):
-            if isinstance(other, Expression):
+            if isinstance(other, SortExpression):
                 return op(self, other)
-            raise TypeError(f'Operand {str(other)} has incorrect type. Expected type: {sortname}_Expression')
+            raise TypeError(f'Operand {str(other)} has incorrect type. Expected same type as {str(self)}: {sortname}_Expression')
 
             #return NotImplemented
         
@@ -294,20 +294,20 @@ def make_sort_expression(sortname):
             return self.mk_operator(other, GT)
 
 
-    Expression.__name__ = sortname + '_' + 'Expression'
+    SortExpression.__name__ = sortname + '_' + 'Expression'
 
-    class Atom(Expression): pass
+    class Atom(SortExpression): pass
 
     def mk_atoms(names: str) -> Atom:
         '''Splits the names string by `,` and creates an Atom for each sub-string. Returns a tuple of the created Atoms.'''
         return (Atom(name.strip()) for name in names.split(','))
 
-    Expression.mk_atoms = mk_atoms
+    SortExpression.mk_atoms = mk_atoms
 
     def BinOp(op_order=op_order.Noop, is_left_assoc=True, symbol=None):
         '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
 
-        class Binop(Expression):
+        class Binop(SortExpression):
 
             prec = op_order
             assoc_left = is_left_assoc
@@ -340,5 +340,5 @@ def make_sort_expression(sortname):
     Xor = BinOp(op_order=op_order.Xor, is_left_assoc=True,symbol='^')
     Or = BinOp(op_order=op_order.Or, is_left_assoc=True,symbol='|')
 
-    return Expression
+    return SortExpression
 

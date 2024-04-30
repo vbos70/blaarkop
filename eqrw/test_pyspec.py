@@ -167,7 +167,7 @@ def test_make_class():
     try:
         assert str(a+(d*f)) == 's+d*f'
     except TypeError as te:
-        assert str(te) == "Operand d*f has incorrect type. Expected type: A_Expression"
+        assert str(te) == "Operand d*f has incorrect type. Expected same type as a: A_Expression"
 
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)
