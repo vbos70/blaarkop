@@ -304,7 +304,7 @@ def make_sort_expression(sortname):
 
     SortExpression.mk_atoms = mk_atoms
 
-    def BinOp(op_order=op_order.Noop, is_left_assoc=True, symbol=None):
+    def mk_BinOp(op_order=op_order.Noop, is_left_assoc=True, symbol=None):
         '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
 
         class Binop(SortExpression):
@@ -315,30 +315,30 @@ def make_sort_expression(sortname):
         
         return Binop
 
-    Mul = BinOp(op_order=op_order.Mul, is_left_assoc=True, symbol='*')
-    MatMul = BinOp(op_order=op_order.MatMul, is_left_assoc=True,symbol='@')
-    TrueDiv = BinOp(op_order=op_order.TrueDiv, is_left_assoc=True,symbol='/')
-    FloorDiv = BinOp(op_order=op_order.FloorDiv, is_left_assoc=True,symbol='//')
-    Mod = BinOp(op_order=op_order.Mod, is_left_assoc=True,symbol='%')
+    Mul = mk_BinOp(op_order=op_order.Mul, is_left_assoc=True, symbol='*')
+    MatMul = mk_BinOp(op_order=op_order.MatMul, is_left_assoc=True,symbol='@')
+    TrueDiv = mk_BinOp(op_order=op_order.TrueDiv, is_left_assoc=True,symbol='/')
+    FloorDiv = mk_BinOp(op_order=op_order.FloorDiv, is_left_assoc=True,symbol='//')
+    Mod = mk_BinOp(op_order=op_order.Mod, is_left_assoc=True,symbol='%')
 
-    Add = BinOp(op_order=op_order.Add, is_left_assoc=True,symbol='+')
-    Sub = BinOp(op_order=op_order.Sub, is_left_assoc=True,symbol='-')
+    Add = mk_BinOp(op_order=op_order.Add, is_left_assoc=True,symbol='+')
+    Sub = mk_BinOp(op_order=op_order.Sub, is_left_assoc=True,symbol='-')
 
-    Pow = BinOp(op_order=op_order.Pow, is_left_assoc=False,symbol='**')
+    Pow = mk_BinOp(op_order=op_order.Pow, is_left_assoc=False,symbol='**')
 
-    LShift = BinOp(op_order=op_order.LShift, is_left_assoc=True,symbol='<<')
-    RShift = BinOp(op_order=op_order.RShift, is_left_assoc=True,symbol='>>')
+    LShift = mk_BinOp(op_order=op_order.LShift, is_left_assoc=True,symbol='<<')
+    RShift = mk_BinOp(op_order=op_order.RShift, is_left_assoc=True,symbol='>>')
 
-    LT = BinOp(op_order=op_order.LT, is_left_assoc=True,symbol='<')
-    LE = BinOp(op_order=op_order.LE, is_left_assoc=True,symbol='<=')
-    EQ = BinOp(op_order=op_order.EQ, is_left_assoc=True,symbol='==')
-    NE = BinOp(op_order=op_order.NE, is_left_assoc=True,symbol='!=')
-    GE = BinOp(op_order=op_order.GE, is_left_assoc=True,symbol='>=')
-    GT = BinOp(op_order=op_order.GT, is_left_assoc=True,symbol='>')
+    LT = mk_BinOp(op_order=op_order.LT, is_left_assoc=True,symbol='<')
+    LE = mk_BinOp(op_order=op_order.LE, is_left_assoc=True,symbol='<=')
+    EQ = mk_BinOp(op_order=op_order.EQ, is_left_assoc=True,symbol='==')
+    NE = mk_BinOp(op_order=op_order.NE, is_left_assoc=True,symbol='!=')
+    GE = mk_BinOp(op_order=op_order.GE, is_left_assoc=True,symbol='>=')
+    GT = mk_BinOp(op_order=op_order.GT, is_left_assoc=True,symbol='>')
 
-    And = BinOp(op_order=op_order.And, is_left_assoc=True,symbol='&')
-    Xor = BinOp(op_order=op_order.Xor, is_left_assoc=True,symbol='^')
-    Or = BinOp(op_order=op_order.Or, is_left_assoc=True,symbol='|')
+    And = mk_BinOp(op_order=op_order.And, is_left_assoc=True,symbol='&')
+    Xor = mk_BinOp(op_order=op_order.Xor, is_left_assoc=True,symbol='^')
+    Or = mk_BinOp(op_order=op_order.Or, is_left_assoc=True,symbol='|')
 
     return SortExpression
 
