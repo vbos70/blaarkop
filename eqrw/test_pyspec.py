@@ -169,5 +169,40 @@ def test_make_class():
     except TypeError as te:
         assert str(te) == "Operands of + operator have incompatible types: 'a: A_Atom' versus 'd*f: B_Mul'"
         
+
+@test
+def test_make_z3class():
+
+    A = make_z3sort_expression(z3.DeclareSort('A'))
+    a,b,c = A.mk_atoms('a,b,c')
+    assert str(a) == 'a'
+
+    e_A = a + b - c
+    assert str(e_A) == 'a+b-c'
+
+    B = make_sort_expression(z3.DeclareSort('B'))
+    d,e,f = B.mk_atoms('d,e,f')
+
+    e_B = d + e + f
+    assert str(e_B) == 'd+e+f'
+
+    assert issubclass(type(a), A)
+    assert not issubclass(type(a), B)
+    
+
+    assert str(a+b-c) == str((a+b)-c)
+    assert str(a**b**c) == str(a**(b**c))
+
+
+    assert str(d+e-f) == str((d+e)-f)
+    assert str(d**e**f) == str(d**(e**f))
+
+    try:
+        assert str(a+(d*f)) == 'e+d*f'
+    except TypeError as te:
+        assert str(te) == "Operands of + operator have incompatible types: 'a: A_Atom' versus 'd*f: B_Mul'"
+
+
+
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)
