@@ -179,12 +179,14 @@ def test_make_z3class():
 
     e_A = a + b - c
     assert str(e_A) == 'a+b-c'
+    assert str(e_A.z3Expr) == 'z3_Sub(z3_Add(a, b), c)', str(e_A.z3Expr)
 
-    B = make_sort_expression(z3.DeclareSort('B'))
+    B = make_z3sort_expression(z3.DeclareSort('B'))
     d,e,f = B.mk_atoms('d,e,f')
 
     e_B = d + e + f
     assert str(e_B) == 'd+e+f'
+    assert str(e_B.z3Expr) == 'z3_Add(z3_Add(d, e), f)', str(e_B.z3Expr)
 
     assert issubclass(type(a), A)
     assert not issubclass(type(a), B)

@@ -479,7 +479,12 @@ def make_z3sort_expression(z3sort):
     Z3SortExpression = type(f'{sortname}_Z3SortExpression', (Z3SortExpressionBase,), {})
     
 
-    class Atom(Z3SortExpression): pass
+    class Atom(Z3SortExpression):
+
+        def __init__(self, *args):
+            super().__init__(*args)
+            self.z3Expr = z3.Const(args[0], z3sort)
+
     Atom = type(f'{sortname}_Atom', (Atom,), {})
 
     def mk_atoms(names: str) -> Atom:
@@ -491,13 +496,19 @@ def make_z3sort_expression(z3sort):
     def mk_BinOp(opname, op_order=op_order.Noop, is_left_assoc=True, symbol=None):
         '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
 
-        class Binop(Z3SortExpression):
+    
+        class BinopBase(Z3SortExpression):
 
             prec = op_order
             assoc_left = is_left_assoc
             op = symbol
-        
-        return type(f'{sortname}_{opname}', (Binop,), {})
+            z3Func = z3.Function(f'z3_{opname}', z3sort, z3sort, z3sort)
+            
+            def __init__(self, *args):
+                super().__init__(*args)
+                self.z3Expr = self.z3Func(args[0].z3Expr, args[1].z3Expr)
+                
+        return type(f'{sortname}_{opname}', (BinopBase,), {})
 
     Mul = mk_BinOp(opname='Mul', op_order=op_order.Mul, is_left_assoc=True, symbol='*')
     MatMul = mk_BinOp(opname='MatMul', op_order=op_order.MatMul, is_left_assoc=True,symbol='@')
