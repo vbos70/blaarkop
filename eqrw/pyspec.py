@@ -497,7 +497,7 @@ def make_z3sort_expression(z3sort):
         '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
 
     
-        class BinopBase(Z3SortExpression):
+        class BinOpBase(Z3SortExpression):
 
             prec = op_order
             assoc_left = is_left_assoc
@@ -508,8 +508,25 @@ def make_z3sort_expression(z3sort):
                 super().__init__(*args)
                 self.z3Expr = self.z3Func(args[0].z3Expr, args[1].z3Expr)
                 
-        return type(f'{sortname}_{opname}', (BinopBase,), {})
+        return type(f'{sortname}_{opname}', (BinOpBase,), {})
 
+    def mk_CmpOp(opname, op_order=op_order.Noop, is_left_assoc=True, symbol=None):
+        '''Creates a subclass of Expression. The expression is a a comparison operator and 2 arguments.'''
+
+    
+        class CmpOpBase(Z3SortExpression):
+
+            prec = op_order
+            assoc_left = is_left_assoc
+            op = symbol
+            z3Func = z3.Function(f'z3_{opname}', z3sort, z3sort, z3.BoolSort())
+            
+            def __init__(self, *args):
+                super().__init__(*args)
+                self.z3Expr = self.z3Func(args[0].z3Expr, args[1].z3Expr)
+                
+        return type(f'{sortname}_{opname}', (CmpOpBase,), {})
+    
     Mul = mk_BinOp(opname='Mul', op_order=op_order.Mul, is_left_assoc=True, symbol='*')
     MatMul = mk_BinOp(opname='MatMul', op_order=op_order.MatMul, is_left_assoc=True,symbol='@')
     TrueDiv = mk_BinOp(opname='TrueDiv', op_order=op_order.TrueDiv, is_left_assoc=True,symbol='/')
@@ -524,12 +541,12 @@ def make_z3sort_expression(z3sort):
     LShift = mk_BinOp(opname='LShift', op_order=op_order.LShift, is_left_assoc=True,symbol='<<')
     RShift = mk_BinOp(opname='RShift', op_order=op_order.RShift, is_left_assoc=True,symbol='>>')
 
-    LT = mk_BinOp(opname='LT', op_order=op_order.LT, is_left_assoc=True,symbol='<')
-    LE = mk_BinOp(opname='LE', op_order=op_order.LE, is_left_assoc=True,symbol='<=')
-    EQ = mk_BinOp(opname='EQ', op_order=op_order.EQ, is_left_assoc=True,symbol='==')
-    NE = mk_BinOp(opname='NE', op_order=op_order.NE, is_left_assoc=True,symbol='!=')
-    GE = mk_BinOp(opname='GE', op_order=op_order.GE, is_left_assoc=True,symbol='>=')
-    GT = mk_BinOp(opname='GT', op_order=op_order.GT, is_left_assoc=True,symbol='>')
+    LT = mk_CmpOp(opname='LT', op_order=op_order.LT, is_left_assoc=True,symbol='<')
+    LE = mk_CmpOp(opname='LE', op_order=op_order.LE, is_left_assoc=True,symbol='<=')
+    EQ = mk_CmpOp(opname='EQ', op_order=op_order.EQ, is_left_assoc=True,symbol='==')
+    NE = mk_CmpOp(opname='NE', op_order=op_order.NE, is_left_assoc=True,symbol='!=')
+    GE = mk_CmpOp(opname='GE', op_order=op_order.GE, is_left_assoc=True,symbol='>=')
+    GT = mk_CmpOp(opname='GT', op_order=op_order.GT, is_left_assoc=True,symbol='>')
 
     And = mk_BinOp(opname='And', op_order=op_order.And, is_left_assoc=True,symbol='&')
     Xor = mk_BinOp(opname='Xor', op_order=op_order.Xor, is_left_assoc=True,symbol='^')
