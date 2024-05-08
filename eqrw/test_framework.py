@@ -7,10 +7,11 @@ suppress_test_output = False
 summary_only = False
 test_dict = dict()
 
-def test_print(*args):
+def test_print(*args, end='\n'):
     global suppress_test_output
     if not suppress_test_output:
         test_output.extend(list(str(a) for a in args))
+        test_output.append(end)
 
 def test(func):
     global test_dict
@@ -28,7 +29,7 @@ def test(func):
             if not summary_only:
                 print(f'passed.')
             if len(test_output)>0:
-                print("Test output:\n" + "\n".join(test_output))
+                print("Test output:\n" + "".join(test_output))
         except AssertionError as ae:
             num_failed_tests += 1
             print(f'Failed:')

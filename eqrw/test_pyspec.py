@@ -3,6 +3,9 @@ from pyspec import *
 
 @test
 def test_op_order():
+
+    A = make_z3sort_expression(z3.DeclareSort('A'))
+    
     assert all(op_order.Noop < o for o in { n: op_order[n] for n in op_order if n != 'Noop' }.values())
     
     assert all(op_order.Pow < o for o in { n: op_order[n] for n in op_order if n != 'Noop' and n != 'Pow' }.values())
@@ -23,7 +26,9 @@ def test_op_order():
 
 @test
 def test_comparison():
-    x,y,z = mk_atoms('x, y, z')
+    A = make_z3sort_expression(z3.DeclareSort('A'))
+
+    x,y,z = A.mk_atoms('x, y, z')
  
     e1 = x<y
     assert str(e1) == 'x<y'
@@ -38,7 +43,8 @@ def test_comparison():
 
 @test
 def test_add_op():
-    x,y,z = mk_atoms('x, y, z')
+    A = make_z3sort_expression(z3.DeclareSort('A'))
+    x,y,z = A.mk_atoms('x, y, z')
 
     e = x + y + z
     assert e.assoc_left
@@ -107,9 +113,9 @@ def test_add_op():
     }
     errors = 0
     for op1 in ops:
-        print(op1, end=': ', flush=True)
+        test_print(op1, end=': ')
         for op2 in ops:
-            print(op2, end=', ', flush=True)
+            test_print(op2, end=', ')
             if errors > 0:
                 continue
             try:
@@ -134,41 +140,8 @@ def test_add_op():
                 test_print(f'ERROR: op1={op1}, op2={op2}')
                 test_print(f'{d.s}, {d.sl}, {d.sr}')
                 errors += 1
-        print()
+        test_print()
 
-
-@test
-def test_make_class():
-
-    A = make_sort_expression('A')
-    a,b,c = A.mk_atoms('a,b,c')
-    assert str(a) == 'a'
-
-    e_A = a + b - c
-    assert str(e_A) == 'a+b-c'
-
-    B = make_sort_expression('B')
-    d,e,f = B.mk_atoms('d,e,f')
-
-    e_B = d + e + f
-    assert str(e_B) == 'd+e+f'
-
-    assert issubclass(type(a), A)
-    assert not issubclass(type(a), B)
-    
-
-    assert str(a+b-c) == str((a+b)-c)
-    assert str(a**b**c) == str(a**(b**c))
-
-
-    assert str(d+e-f) == str((d+e)-f)
-    assert str(d**e**f) == str(d**(e**f))
-
-    try:
-        assert str(a+(d*f)) == 'e+d*f'
-    except TypeError as te:
-        assert str(te) == "Operands of + operator have incompatible types: 'a: A_Atom' versus 'd*f: B_Mul'"
-        
 
 @test
 def test_make_z3class():
