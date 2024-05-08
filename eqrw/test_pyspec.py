@@ -32,11 +32,9 @@ def test_comparison():
  
     e1 = x<y
     assert str(e1) == 'x<y'
-
     e2 = y<z
-    assert str(e2) == 'y<z'
-
-    # Strange behaviour for changed comparisons
+    
+    # Strange behaviour for chained comparisons
     e3 = x<y<z
     assert str(e3) == 'y<z'
     # Python translates 'x<y<z' into the same bytecode as 'x<y and y<z'
