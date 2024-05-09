@@ -3,6 +3,8 @@ from itertools import chain
 from process import *
 import time
 
+class ProofException(Exception): pass
+class ProofTimeoutException(ProofException): pass
 
 class Prover:
 
@@ -35,9 +37,6 @@ class Prover:
         '''Returns the timeout of proof step checks in seconds.'''
         return self.timeout_ms() / 1000
 
-
-    class ProofException(Exception): pass
-    class ProofTimeoutException(ProofException): pass
 
     def add_fact(self, f):
         self.facts.append(f)

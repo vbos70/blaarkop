@@ -2,6 +2,89 @@ from enum import Enum
 from utils import AttrDict
 import z3
 
+
+
+
+
+
+
+class And:
+
+    def __init__(self, *args):
+        self.args = args
+        try:
+            self.z3Expr = z3.And(*(a.z3Expr for a in self.args))
+        except z3.z3types.Z3Exception:
+            raise TypeError(f"One or more arguments of And does not have the expected boolean type.") from None
+        
+    def __str__(self):
+        return f'And({", ".join(str(a) for a in self.args)})'
+
+class Or:
+
+    def __init__(self, *args):
+        self.args = args
+        try:
+            self.z3Expr = z3.Or(*(a.z3Expr for a in self.args))
+        except z3.z3types.Z3Exception:
+            raise TypeError(f"One or more arguments of Or does not have the expected boolean type.") from None
+        
+    def __str__(self):
+        return f'Or({", ".join(str(a) for a in self.args)})'
+
+
+class Implies:
+
+    def __init__(self, *args):
+        self.args = args
+        try:
+            self.z3Expr = z3.Implies(*(a.z3Expr for a in self.args))
+        except z3.z3types.Z3Exception:
+            raise TypeError(f"One or more arguments of Implies does not have the expected boolean type.") from None
+        
+    def __str__(self):
+        return f'Implies({", ".join(str(a) for a in self.args)})'
+
+class Xor:
+
+    def __init__(self, *args):
+        self.args = args
+        try:
+            self.z3Expr = z3.Xor(*(a.z3Expr for a in self.args))
+        except z3.z3types.Z3Exception:
+            raise TypeError(f"One or more arguments of Xor does not have the expected boolean type.") from None
+        
+    def __str__(self):
+        return f'Xor({", ".join(str(a) for a in self.args)})'
+
+class Not:
+
+    def __init__(self, a):
+        self.a = a
+        try:
+            self.z3Expr = z3.Not(self.a.z3Expr)
+        except z3.z3types.Z3Exception:
+            raise TypeError(f"Argument of Not does not have the expected boolean type.") from None
+        
+    def __str__(self):
+        return f'Not({str(self.a)})'
+
+
+class ForAll:
+
+    def __init__(self, vs, formula):
+        self.vs = vs
+        self.formula = formula
+        try:
+            self.z3Expr = z3.ForAll([v.z3Expr for v in vs], formula.z3Expr)
+        except z3.z3types.Z3Exception:
+            raise TypeError(f"One or more arguments of ForAll does not have the expected type.") from None
+
+    def __str__(self):
+        return f'ForAll([{", ".join(str(v) for v in self.vs)}], {str(self.formula)})'
+    
+
+
 # Future:
 # - here is an alternative to define new operators: https://code.activestate.com/recipes/384122/
 
@@ -24,9 +107,9 @@ op_order = AttrDict(
     GT = 3,
     LShift = 4,
     RShift = 4,
-    And = 5,
-    Xor = 6,
-    Or = 7,
+    BAnd = 5,
+    BXor = 6,
+    BOr = 7,
 )
 
 
@@ -108,13 +191,13 @@ def make_z3sort_expression(z3sort):
             return self.mk_operator(other, RShift)
         
         def __and__(self, other):
-            return self.mk_operator(other, And)
+            return self.mk_operator(other, BAnd)
 
         def __xor__(self, other):
-            return self.mk_operator(other, Xor)
+            return self.mk_operator(other, BXor)
 
         def __or__(self, other):
-            return self.mk_operator(other, Or)
+            return self.mk_operator(other, BOr)
 
 
         # comparison operators
@@ -188,7 +271,12 @@ def make_z3sort_expression(z3sort):
             prec = op_order
             assoc_left = is_left_assoc
             op = symbol
-            z3Func = z3.Function(f'z3_{opname}', z3sort, z3sort, z3.BoolSort())
+            if op == '==':
+                z3Func = lambda self, x, y: x == y
+            elif op == '!=':
+                z3Func = lambda self, x, y: x != y
+            else:
+                z3Func = z3.Function(f'z3_{opname}', z3sort, z3sort, z3.BoolSort())
             
             def __init__(self, *args):
                 super().__init__(*args)
@@ -217,9 +305,9 @@ def make_z3sort_expression(z3sort):
     GE = mk_CmpOp(opname='GE', op_order=op_order.GE, is_left_assoc=True,symbol='>=')
     GT = mk_CmpOp(opname='GT', op_order=op_order.GT, is_left_assoc=True,symbol='>')
 
-    And = mk_BinOp(opname='And', op_order=op_order.And, is_left_assoc=True,symbol='&')
-    Xor = mk_BinOp(opname='Xor', op_order=op_order.Xor, is_left_assoc=True,symbol='^')
-    Or = mk_BinOp(opname='Or', op_order=op_order.Or, is_left_assoc=True,symbol='|')
+    BAnd = mk_BinOp(opname='BAnd', op_order=op_order.BAnd, is_left_assoc=True,symbol='&')
+    BXor = mk_BinOp(opname='BXor', op_order=op_order.BXor, is_left_assoc=True,symbol='^')
+    BOr = mk_BinOp(opname='BOr', op_order=op_order.BOr, is_left_assoc=True,symbol='|')
 
     return Z3SortExpression
 

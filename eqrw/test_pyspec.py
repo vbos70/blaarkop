@@ -10,7 +10,7 @@ def test_op_order():
     
     assert all(op_order.Pow < o for o in { n: op_order[n] for n in op_order if n != 'Noop' and n != 'Pow' }.values())
     
-    assert all(op_order.Xor > o for o in { n: op_order[n] for n in op_order if n not in ['And', 'Or', 'Xor'] }.values())
+    assert all(op_order.BXor > o for o in { n: op_order[n] for n in op_order if n not in ['BAnd', 'BOr', 'BXor'] }.values())
 
     assert op_order.Add == op_order.Sub
 
@@ -19,8 +19,8 @@ def test_op_order():
     assert op_order.Mul == op_order.FloorDiv
     assert op_order.Mul == op_order.Mod
 
-    assert op_order.Xor < op_order.Or
-    assert op_order.And < op_order.Xor
+    assert op_order.BXor < op_order.BOr
+    assert op_order.BAnd < op_order.BXor
 
 
 
@@ -191,9 +191,22 @@ def test_optype():
     assert all(not is_binop(e) for e in [a<b, a<=b, a==b, a!=c, a>=c, a>b])
     assert all(is_cmpop(e) for e in [a<b, a<=b, a==b, a!=c, a>=c, a>b])
 
+@test
+def test_formulas():
+    A = make_z3sort_expression(z3.DeclareSort('A'))
+    a,b,c = A.mk_atoms('a,b,c')
+    
+    formulas = [
+        And(a == b, Not(c != a)),
+        ForAll([a,b], a + b == b + a),
+        Or(a == b, Not(c != a)),
+        Implies(a == b, Not(c != a)),
+        Xor(a == b, Not(c != a))
+    ]
 
-
-
+    for f in formulas:
+        assert str(f) == str(eval(str(f)))
+        test_print(f)
 
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)
