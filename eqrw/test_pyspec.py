@@ -175,6 +175,24 @@ def test_make_z3class():
     except TypeError as te:
         assert str(te) == "Operands of + operator have incompatible types: 'a: A_Atom' versus 'd*f: B_Mul'"
 
+@test
+def test_optype():
+    A = make_z3sort_expression(z3.DeclareSort('A'))
+    a,b,c = A.mk_atoms('a,b,c')
+    assert all(is_atom(e) for e in [a,b,c])
+    assert all(not is_binop(e) for e in [a,b,c])
+    assert all(not is_cmpop(e) for e in [a,b,c])
+
+    assert all(not is_atom(e) for e in [a+b, a-b, a*b, a@c, a//c, a/b, a&c, a**c, a<<b, a>>b, a&b, b^c, b|c])
+    assert all(is_binop(e) for e in [a+b, a-b, a*b, a@c, a//c, a/b, a&c, a**c, a<<b, a>>b, a&b, b^c, b|c])
+    assert all(not is_cmpop(e) for e in [a+b, a-b, a*b, a@c, a//c, a/b, a&c, a**c, a<<b, a>>b, a&b, b^c, b|c])
+
+    assert all(not is_atom(e) for e in [a<b, a<=b, a==b, a!=c, a>=c, a>b])
+    assert all(not is_binop(e) for e in [a<b, a<=b, a==b, a!=c, a>=c, a>b])
+    assert all(is_cmpop(e) for e in [a<b, a<=b, a==b, a!=c, a>=c, a>b])
+
+
+
 
 
 if __name__ == '__main__':

@@ -216,4 +216,12 @@ def make_z3sort_expression(z3sort):
 
     return Z3SortExpression
 
+def is_atom(e):
+    return e.op is None
+
+def is_binop(e):
+    return e.op in set(['+','-','*','@','/','//','%','**','<<','>>','&','^','|'])
+
+def is_cmpop(e):
+    return e.op in set(['<','<=','==','!=','>=','>'])
 
