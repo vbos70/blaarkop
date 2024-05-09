@@ -50,6 +50,7 @@ def make_z3sort_expression(z3sort):
 
         def __init__(self, *args):
             self.args = args
+            self.z3Expr = None
 
 
         def __str__(self):
@@ -139,6 +140,7 @@ def make_z3sort_expression(z3sort):
 
     # Create a SortExpressionBase-subclass with sortname as part of the class name
     Z3SortExpression = type(f'{sortname}_Z3SortExpression', (Z3SortExpressionBase,), {})
+    Z3SortExpression.atoms = set()
     
 
     class Atom(Z3SortExpression):
@@ -146,12 +148,17 @@ def make_z3sort_expression(z3sort):
         def __init__(self, *args):
             super().__init__(*args)
             self.z3Expr = z3.Const(args[0], z3sort)
+        
+        def __hash__(self):
+            return hash(self.z3Expr)
 
     Atom = type(f'{sortname}_Atom', (Atom,), {})
 
     def mk_atoms(names: str) -> Atom:
         '''Splits the names string by `,` and creates an Atom for each sub-string. Returns a tuple of the created Atoms.'''
-        return (Atom(name.strip()) for name in names.split(','))
+        ats = [Atom(name.strip()) for name in names.split(',')]
+        Z3SortExpression.atoms.update(ats)
+        return ats
 
     Z3SortExpression.mk_atoms = mk_atoms
 

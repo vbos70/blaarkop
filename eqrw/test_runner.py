@@ -9,6 +9,8 @@ import test_T1_eqt
 import test_T2_eqt
 import test_process
 import test_process_theory
+import test_pyspec
+import test_prover
 
 if __name__ == '__main__':
 
