@@ -199,6 +199,7 @@ def test_formulas():
     formulas = [
         And(a == b, Not(c != a)),
         ForAll([a,b], a + b == b + a),
+        Exists([a,b], a + b == b + a),
         Or(a == b, Not(c != a)),
         Implies(a == b, Not(c != a)),
         Xor(a == b, Not(c != a))
@@ -208,5 +209,15 @@ def test_formulas():
         assert str(f) == str(eval(str(f)))
         test_print(f)
 
+
+@test
+def test_Function():
+    A = make_z3sort_expression(z3.DeclareSort('A'))
+    a,b,c = A.mk_atoms('a,b,c')
+    
+    f = Function('f', A, A, A)
+
+    print(str(f.z3Expr))
+    
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)

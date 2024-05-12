@@ -82,7 +82,29 @@ class ForAll:
 
     def __str__(self):
         return f'ForAll([{", ".join(str(v) for v in self.vs)}], {str(self.formula)})'
-    
+
+
+class Exists:
+
+    def __init__(self, vs, formula):
+        self.vs = vs
+        self.formula = formula
+        try:
+            self.z3Expr = z3.Exists([v.z3Expr for v in vs], formula.z3Expr)
+        except z3.z3types.Z3Exception:
+            raise TypeError(f"One or more arguments of Exists does not have the expected type.") from None
+
+    def __str__(self):
+        return f'ForAll([{", ".join(str(v) for v in self.vs)}], {str(self.formula)})'
+
+
+
+class Function:
+    def __init__(self, name, *sorts):
+        self.name = name
+        self.sorts = sorts
+        self.z3Expr = z3.Function(name, *(s.z3Sort for s in sorts))
+
 
 
 # Future:
@@ -129,6 +151,7 @@ def make_z3sort_expression(z3sort):
         prec = op_order.Noop
         assoc_left = True
         op = None
+        z3Sort = z3sort
 
 
         def __init__(self, *args):
@@ -259,7 +282,7 @@ def make_z3sort_expression(z3sort):
             def __init__(self, *args):
                 super().__init__(*args)
                 self.z3Expr = self.z3Func(args[0].z3Expr, args[1].z3Expr)
-                
+
         return type(f'{sortname}_{opname}', (BinOpBase,), {})
 
     def mk_CmpOp(opname, op_order=op_order.Noop, is_left_assoc=True, symbol=None):
