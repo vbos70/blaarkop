@@ -214,10 +214,21 @@ def test_formulas():
 def test_Function():
     A = make_z3sort_expression(z3.DeclareSort('A'))
     a,b,c = A.mk_atoms('a,b,c')
+    test_print(a.z3Expr)
+    test_print(b.z3Expr)
     
     f = Function('f', A, A, A)
 
-    print(str(f.z3Expr))
-    
+    assert str(f) == 'f'
+
+    e = f(a, b)
+    assert str(e) == 'f(a, b)'
+    test_print(c + e)
+
+    B = make_z3sort_expression(z3.DeclareSort('B'))
+    d = B.mk_atoms('d')
+
+    f = a + d
+
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)
