@@ -217,18 +217,36 @@ def test_Function():
     test_print(a.z3Expr)
     test_print(b.z3Expr)
     
-    f = Function('f', A, A, A)
+    f = A.mk_function('f', A, A)
+    fa = A.mk_function('fa', A, A)
 
     assert str(f) == 'f'
 
+    e = fa(a, b)
     e = f(a, b)
     assert str(e) == 'f(a, b)'
-    test_print(c + e)
+    test_print("c+e:", c + e)
+
+    e = f(a, b) + b
+    assert str(e) == 'f(a, b)+b'
+    test_print("e+c:", e + c)
 
     B = make_z3sort_expression(z3.DeclareSort('B'))
     d = B.mk_atoms('d')
 
-    f = a + d
+    try:
+        f = a + d
+    except TypeError as te:
+        assert str(te) == 'Arguments of + have incompatible sorts: A and B'
+
+    Q = make_z3sort_expression(z3.DeclareSort('Q'))
+    q = Q.mk_atoms('q')
+
+    fq = A.mk_function('fq', Q, Q)
+
+    e = fq(q, q)
+    test_print(e + a)
+
 
 if __name__ == '__main__':
     run_tests(new_suppress_test_output=False)

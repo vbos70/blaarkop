@@ -99,32 +99,6 @@ class Exists:
 
 
 
-class Function:
-    def __init__(self, name, *sorts):
-        self.name = name
-        self.sorts = sorts
-        self.z3Expr = z3.Function(name, *(s.z3Sort for s in sorts))
-        self.prec = op_order.Noop
-
-    def __call__(self, *args):
-        return FuncApp(self, *args)
-    
-    def __str__(self):
-        return str(self.name)
-
-
-class FuncApp:
-
-    def __init__(self, func, *args):
-        self.func = func
-        self.args = args
-        self.z3Expr = func.z3Expr(*(a.z3Expr for a in self.args))
-        self.prec = op_order.Noop
-
-    def __str__(self):
-        return f'{str(self.func)}({", ".join(str(a) for a in self.args)})'
-    
-
 
 
 # Future:
@@ -285,7 +259,7 @@ def make_z3sort_expression(z3sort):
         '''Splits the names string by `,` and creates an Atom for each sub-string. Returns a tuple of the created Atoms.'''
         ats = [Atom(name.strip()) for name in names.split(',')]
         Z3SortExpression.atoms.update(ats)
-        return ats
+        return ats if len(ats)>1 else ats[0]
 
     Z3SortExpression.mk_atoms = mk_atoms
 
@@ -305,7 +279,7 @@ def make_z3sort_expression(z3sort):
                 try:
                     self.z3Expr = self.z3Func(args[0].z3Expr, args[1].z3Expr)
                 except Exception:
-                    raise TypeError(f'Arguments of {self.op} have incompatible sorts.') from None
+                    raise TypeError(f'Arguments of {self.op} have incompatible sorts: {args[0].z3Expr.sort()} and {args[1].z3Expr.sort()}') from None
                 
         return type(f'{sortname}_{opname}', (BinOpBase,), {})
 
@@ -358,6 +332,39 @@ def make_z3sort_expression(z3sort):
     BAnd = mk_BinOp(opname='BAnd', op_order=op_order.BAnd, is_left_assoc=True,symbol='&')
     BXor = mk_BinOp(opname='BXor', op_order=op_order.BXor, is_left_assoc=True,symbol='^')
     BOr = mk_BinOp(opname='BOr', op_order=op_order.BOr, is_left_assoc=True,symbol='|')
+
+
+    class Function(Z3SortExpression):
+        '''Functions with Z3SortExpression as result type.'''
+
+        def __init__(self, name, *sorts):
+            '''Create a Function with given name. The argument types are given 
+            by *sorts. the result type is Z3SortExpression.'''
+            self.name = name
+            self.sorts = sorts + (Z3SortExpression,)
+            self.z3Expr = z3.Function(name, *(s.z3Sort for s in self.sorts))
+            self.prec = op_order.Noop
+
+        def __call__(self, *args):
+            return FuncApp(self, *args)
+        
+        def __str__(self):
+            return str(self.name)
+
+    Z3SortExpression.mk_function = Function
+
+    class FuncApp(Z3SortExpression):
+
+        def __init__(self, func, *args):
+            self.func = func
+            self.args = args
+            self.z3Expr = func.z3Expr(*(a.z3Expr for a in self.args))
+            self.prec = op_order.Noop
+
+        def __str__(self):
+            return f'{str(self.func)}({", ".join(str(a) for a in self.args)})'
+        
+
 
     return Z3SortExpression
 
