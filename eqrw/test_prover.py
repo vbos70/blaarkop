@@ -33,7 +33,10 @@ def test_forall():
                    
     B = make_z3sort_expression(z3.DeclareSort('B'))
     r,s,t = B.mk_atoms('r, s, t')
-    l2 = ForAll([x, y, s], t + s == s + t)    
+    l2 = ForAll([t, s], t + s == s + t)
+
+    assert p.prove(t+s==s+t, l2)    
+    assert not p.prove(t+s==s+t, l1)    
 
 @test
 def test_prove():
