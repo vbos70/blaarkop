@@ -173,7 +173,7 @@ def test_make_z3class():
     try:
         assert str(a+(d*f)) == 'e+d*f'
     except TypeError as te:
-        assert str(te) == "Operands of + operator have incompatible types: 'a: A_Atom' versus 'd*f: B_Mul'"
+        assert str(te) == "Arguments of + have incompatible sorts: A and B", str(te)
 
 @test
 def test_optype():
