@@ -242,6 +242,7 @@ def test_Function():
     Q = make_z3sort_expression(z3.DeclareSort('Q'))
     q = Q.mk_atoms('q')
 
+    # create an A-valued function of 2 parameters, both of type (sort) Q.
     fq = A.mk_function('fq', Q, Q)
 
     e = fq(q, q)
