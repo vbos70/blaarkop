@@ -11,7 +11,7 @@ class Prover:
     def __init__(self):
         self.params = AttrDict()
         self.set_timeout(2 * 60) # 2 minutes timeout
-        self.facts = []
+        self.facts = set()
 
     def solver(self):
         return self.params.solver()
@@ -39,7 +39,15 @@ class Prover:
 
 
     def add_fact(self, f):
-        self.facts.append(f)
+        self.facts.add(f)
+
+    def remove_fact(self, f):
+        '''Removes fact f from this Prover, if f was added to this Prover previously.
+        Otherwise, this Prover is not changed.'''
+        try:
+            self.facts.remove(f)
+        except KeyError:
+            pass
 
     def prove(self, formula, *eqs):
         ''' Returns True if `formula` can be proven by `solver` 

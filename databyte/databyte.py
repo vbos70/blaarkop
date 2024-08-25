@@ -1,6 +1,7 @@
 import struct
 from collections import namedtuple
 from typing import Dict, List, Tuple, Union
+from test_framework import *
 
 Field = namedtuple('Field', 'wd loc')
 # Field.format: struct format string
@@ -129,7 +130,7 @@ def make_db2():
                        'ds': Field(wd=3, loc=slice(g1.offset+2, g1.offset+total_length(g1), g1.length))
                        })
 
-
+@test
 def test_getitem():
     db = make_db()
     assert db['a'] == [bytearray([0])]
@@ -137,17 +138,20 @@ def test_getitem():
     assert db['cs'] == list(bytearray([i]) for i in [3,5,7,9])
     assert db['ds'] == list(bytearray([i]) for i in [4,6,8])
 
+@test
 def test_getitem_index():
     db = make_db()
     for i in range(10):
         assert db[i] == i
 
+@test
 def test_getitem_slice():
     db = make_db()
     assert db[::2] == ba(list(range(0,10,2)))
     assert db[1::3] == ba(list(range(10))[1::3])
     assert db[-1::-1] == ba(list(range(10))[-1::-1])
 
+@test
 def test_getitem_IndexError():
     db = make_db()
     try:
@@ -157,6 +161,7 @@ def test_getitem_IndexError():
         pass
 
     
+@test
 def test_setitem_index():
     db = make_db()
 
@@ -166,6 +171,7 @@ def test_setitem_index():
     db[0::4] = ba(18,19,20)
     assert db[0::4] == ba(18, 19, 20)
     
+@test
 def test_setitem_IndexError():
     db = make_db()
     try:
@@ -175,17 +181,19 @@ def test_setitem_IndexError():
         pass
 
 
+@test
 def test_setitem_slice_ValueError():
     db = make_db()
 
+    assert len(db[0::4]) == 3
     try:
-        assert len(db[0::4]) == 3
         db[0::4] = ba(19,39)
         assert False
     except ValueError:
         pass
     
     
+@test
 def test_setitem():
     db = make_db()
 
@@ -207,6 +215,7 @@ def test_setitem():
     assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])
     
 
+@test
 def test_field_access():
 
     db = make_db()
@@ -217,6 +226,7 @@ def test_field_access():
     assert db.ds == list(ba(i) for i in [4,6,8])
 
 
+@test
 def test_field_assignment():
 
     db = make_db()
@@ -224,9 +234,11 @@ def test_field_assignment():
     db.a = [ba(100)]
     assert db.a == [bytearray([100])]
 
+    assert len(db.b) == 2
     db.b = list(ba(i) for i in [13,14])
     assert db.b == list(ba(i) for i in [13,14])
 
+    assert len(db.cs) == 4
     db.cs = list(ba(i) for i in [20,30,40,50])
     assert db.cs == list(ba(i) for i in [20,30,40,50])
 
@@ -236,6 +248,7 @@ def test_field_assignment():
     assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])
 
 
+@test
 def test_multibyte_field():
     db = make_db2()
 
@@ -248,6 +261,7 @@ def test_multibyte_field():
     db.cs[0] = ba(20,20)
     assert db.cs == [ba(20,20),ba(10,11), ba(15,16)]
     
+@test
 def test_multibyte_field_setitem():
     db = make_db2()
 
@@ -282,4 +296,8 @@ def test_multibyte_field_setitem():
     
     assert db.cs == [ba(50,60), ba(100,110), ba(150,160)]
     assert db.ds == [ba(0,0,0), ba(1,1,1), ba(2,2,2)]
-    
+
+
+if __name__ == '__main__':
+    run_tests(print_summary_only=False, new_suppress_test_output=True)
+    print(test_summary())

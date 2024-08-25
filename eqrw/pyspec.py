@@ -150,8 +150,12 @@ def make_z3sort_expression(z3sort):
 
         def __init__(self, *args):
             self.args = args
-            self.z3Expr = None
+            self.z3Expr = z3.Const(",".join(str(a) for a in args), z3sort)
 
+
+        def __hash__(self):
+            return hash(self.z3Expr)
+        
 
         def __str__(self):
             def parenthesize(x, ctx, strict):
@@ -245,16 +249,11 @@ def make_z3sort_expression(z3sort):
     
 
     class Atom(Z3SortExpression):
-
-        def __init__(self, *args):
-            super().__init__(*args)
-            self.z3Expr = z3.Const(args[0], z3sort)
-        
-        def __hash__(self):
-            return hash(self.z3Expr)
+        pass        
 
     Atom = type(f'{sortname}_Atom', (Atom,), {})
-
+    Z3SortExpression.Atom = Atom
+    
     def mk_atoms(names: str) -> Atom:
         '''Splits the names string by `,` and creates an Atom for each sub-string. Returns a tuple of the created Atoms.'''
         ats = [Atom(name.strip()) for name in names.split(',')]

@@ -173,7 +173,7 @@ def test_make_z3class():
     try:
         assert str(a+(d*f)) == 'e+d*f'
     except TypeError as te:
-        assert str(te) == "Operands of + operator have incompatible types: 'a: A_Atom' versus 'd*f: B_Mul'"
+        assert str(te) == "Arguments of + have incompatible sorts: A and B", str(te)
 
 @test
 def test_optype():
@@ -242,6 +242,7 @@ def test_Function():
     Q = make_z3sort_expression(z3.DeclareSort('Q'))
     q = Q.mk_atoms('q')
 
+    # create an A-valued function of 2 parameters, both of type (sort) Q.
     fq = A.mk_function('fq', Q, Q)
 
     e = fq(q, q)
