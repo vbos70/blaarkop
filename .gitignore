@@ -19,3 +19,4 @@ pyenv
 /*/__pycache__
 blmean/blmean_lowlevel.exe
 eqrw/z3py.py
+gnss/hs/AAA-bbb/*
