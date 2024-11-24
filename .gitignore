@@ -23,3 +23,4 @@ eqrw/z3py.py
 databyte/.pyenv
 python_examples/.venv
 python_examples/random_bytes*.bin
+gnss/hs/AAA-bbb/*
