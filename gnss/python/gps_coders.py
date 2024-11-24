@@ -40,10 +40,13 @@ def test_GPS_L1_coder(prn: int) -> bool:
 if __name__ == '__main__':
     from itertools import islice
     print(list(islice(GPS_L1_coder(1), 10)))
+    errors = []
     for prn in GPS_L1_PRNS:
         try:
             test_GPS_L1_coder(prn)
             print(f'PRN({prn}): OK')
         except Exception as e:
-            print(f'PRN({prn}): Failed:')
-            print(e)
+            errors.append(f'PRN({prn}): Failed:')
+            errors.append(f'    {e}')
+    for e in errors:
+        print(e)
