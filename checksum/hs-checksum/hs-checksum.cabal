@@ -1,0 +1,63 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.35.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           hs-checksum
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/vbos70/blaarkop/checksum#README.md>
+homepage:       https://github.com/vbos70/blaarkop#readme
+bug-reports:    https://github.com/vbos70/blaarkop/issues
+author:         Victor Bos
+maintainer:     victor.bos@gmail.com
+copyright:      2021-2025 Victor Bos
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/vbos70/blaarkop
+
+library
+  exposed-modules:
+      Lib
+  other-modules:
+      Paths_hs_checksum
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+  default-language: Haskell2010
+
+executable hs-checksum-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_hs_checksum
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , bytestring
+    , hs-checksum
+  default-language: Haskell2010
+
+test-suite hs-checksum-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_hs_checksum
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , hs-checksum
+  default-language: Haskell2010
