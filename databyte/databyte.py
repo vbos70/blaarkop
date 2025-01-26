@@ -1,7 +1,6 @@
 import struct
 from collections import namedtuple
 from typing import Dict, List, Tuple, Union
-from test_framework import *
 
 Field = namedtuple('Field', 'wd loc')
 # Field.format: struct format string
@@ -10,6 +9,46 @@ Field = namedtuple('Field', 'wd loc')
 
 class DataByteError(Exception): pass
 
+def identity(x):
+    return x
+
+class DataView:
+
+    def __init__(self, sequence, start, end, step, width, to_sequence=identity, from_sequence=identity):
+        self.sequence = sequence
+        self.start = start
+        self.end = end 
+        self.step = step
+        self.width = width
+        self.to_sequence = to_sequence
+        self.from_sequence = from_sequence
+    
+    def __len__(self):
+        return (self.end-self.start)//self.step
+    
+    def __getitem__(self, i):
+        if isinstance(i, int):
+            if i<0:
+                raise IndexError(f'DataView does not accept negative index: {i}')
+            if i>=len(self):
+                raise IndexError(f'DataView index too large: {i} (max is {len(self)-1})')
+            return self.from_sequence(self.sequence[i*self.step: i*self.step + self.width])
+        elif isinstance(i, slice):
+            i_start = i.start if i.start is not None else 0
+            i_stop = i.stop if i.stop is not None else len(self)
+            i_step = i.step if i.step is not None else 1
+
+            if i_start < 0:
+                raise IndexError(f'DataView does not accept slice with negative start index: {i}')
+            elif i_stop>len(self):
+                raise IndexError(f'DataView slice stop index too large: {i} (max is {len(self)})')
+            else:
+                return self.from_sequence(
+                        list(self.sequence[j*self.step: j*self.step + self.width]
+                           for j in range(i_start, i_stop, i_step)))
+        else:
+            raise IndexError(f"Index or slice expected, not {type(i)}") 
+    
 class RawDataBytes(object):
 
     def __init__(self, rawbytes: bytearray, field: Dict[str, Field]):
@@ -42,6 +81,7 @@ class RawDataBytes(object):
         Otherwise, an IndexError is raised.
 
         '''
+        print('__getitem__')
         if isinstance(k, int):
             return self._rawbytes[k]
         elif isinstance(k, slice):
@@ -68,7 +108,9 @@ class RawDataBytes(object):
         Otherwise, an IndexError is raised.
 
         '''
+        print('__setitem__')
         if isinstance(k, int):
+            print('##')
             self._rawbytes[k] = xs
         elif isinstance(k, slice):
             self._rawbytes[k] = xs
@@ -82,222 +124,3 @@ class RawDataBytes(object):
                     raise ValueError(f"Incorrect number of bytes in assignment to Field {k}[{i}], expected {wd}, found {len(xs[i])}.")
                 idx = loc.start + i*loc.step
                 self._rawbytes[idx:idx+wd] = xs[i]
-
-################################################################################
-#
-# pytest unit test functions
-#
-# Run the unit tests as:
-#
-#     pytest databyte.py  # assuming pytest is installed!
-#
-###############################################################################
-
-def ba(*args):
-    '''Return a bytearray containing the values in `*args`.
-
-    If `*args` contains exactly one element and if it is a list,
-    this element (`args[0]`) is the argument to bytearray().
-
-    Otherwise, the list `args` is the argument to bytearray().
-
-    '''
-    if len(args) == 1:
-        if isinstance(args[0],list):
-            args=args[0]
-    return bytearray(args)
-
-def make_db():
-    return RawDataBytes(bytearray([0,1,2,3,4,5,6,7,8,9]),
-                      {'a': Field(wd=1, loc=slice(0,1,1)),   # 1 byte at position 0 
-                       'b': Field(wd=1, loc=slice(1,3,1)),   # 2 bytes at positions 1,2
-                       'cs': Field(wd=1, loc=slice(3,10,2)), # 4 bytes at positions 3,5,7,9
-                       'ds': Field(wd=1, loc=slice(4,10,2))  # 3 bytes at positions 4,6,8
-                       })
-
-Group = namedtuple('Group', 'offset length repeat')
-def total_length(g):
-    return g.length * g.repeat
-
-def make_db2():
-    g0 = Group(offset=0, length=5, repeat=1)
-    g1 = Group(offset=total_length(g0), length=5, repeat=3)
-
-    return RawDataBytes(bytearray(list(range(total_length(g0) + total_length(g1)))),
-                      {'a': Field(wd=3, loc=slice(g0.offset+0, g0.offset+total_length(g0), g0.length)),
-                       'b': Field(wd=2, loc=slice(g0.offset+3, g0.offset+total_length(g0), g0.length)),
-                       'cs': Field(wd=2, loc=slice(g1.offset+0, g1.offset+total_length(g1), g1.length)),
-                       'ds': Field(wd=3, loc=slice(g1.offset+2, g1.offset+total_length(g1), g1.length))
-                       })
-
-@test
-def test_getitem():
-    db = make_db()
-    assert db['a'] == [bytearray([0])]
-    assert db['b'] == [bytearray([1]), bytearray([2])]
-    assert db['cs'] == list(bytearray([i]) for i in [3,5,7,9])
-    assert db['ds'] == list(bytearray([i]) for i in [4,6,8])
-
-@test
-def test_getitem_index():
-    db = make_db()
-    for i in range(10):
-        assert db[i] == i
-
-@test
-def test_getitem_slice():
-    db = make_db()
-    assert db[::2] == ba(list(range(0,10,2)))
-    assert db[1::3] == ba(list(range(10))[1::3])
-    assert db[-1::-1] == ba(list(range(10))[-1::-1])
-
-@test
-def test_getitem_IndexError():
-    db = make_db()
-    try:
-        x = db[100]
-        assert False
-    except IndexError:
-        pass
-
-    
-@test
-def test_setitem_index():
-    db = make_db()
-
-    db[0] = 100
-    assert db[0] == 100
-
-    db[0::4] = ba(18,19,20)
-    assert db[0::4] == ba(18, 19, 20)
-    
-@test
-def test_setitem_IndexError():
-    db = make_db()
-    try:
-        db[100] == 100
-        assert False
-    except IndexError:
-        pass
-
-
-@test
-def test_setitem_slice_ValueError():
-    db = make_db()
-
-    assert len(db[0::4]) == 3
-    try:
-        db[0::4] = ba(19,39)
-        assert False
-    except ValueError:
-        pass
-    
-    
-@test
-def test_setitem():
-    db = make_db()
-
-    db['a'] = [ba(100)]
-    assert db['a'] == [bytearray([100])]
-    assert db[:] == bytearray([100,1,2,3,4,5,6,7,8,9])
-
-    db['b'] = [ba(13), ba(14)]
-    assert db['b'] == list(bytearray([i]) for i in [13,14])
-    assert db[:] == bytearray([100,13,14,3,4,5,6,7,8,9])
-    
-    db['cs'] = list(ba(i) for i in [20,30,40,50])
-    assert db['cs'] == list(ba(i) for i in [20,30,40,50])
-    assert db[:] == bytearray([100,13,14,20,4,30,6,40,8,50])    
-
-    db['ds'] = list(ba(i) for i in [200,201,202])
-    assert db['ds'] == list(ba(i) for i in [200,201,202])
-
-    assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])
-    
-
-@test
-def test_field_access():
-
-    db = make_db()
-
-    assert db.a == [bytearray([0])]
-    assert db.b == list(ba(i) for i in [1,2])
-    assert db.cs == list(ba(i) for i in [3,5,7,9])
-    assert db.ds == list(ba(i) for i in [4,6,8])
-
-
-@test
-def test_field_assignment():
-
-    db = make_db()
-
-    db.a = [ba(100)]
-    assert db.a == [bytearray([100])]
-
-    assert len(db.b) == 2
-    db.b = list(ba(i) for i in [13,14])
-    assert db.b == list(ba(i) for i in [13,14])
-
-    assert len(db.cs) == 4
-    db.cs = list(ba(i) for i in [20,30,40,50])
-    assert db.cs == list(ba(i) for i in [20,30,40,50])
-
-    db.ds = list( ba(i) for i in [200,201,202])
-    assert db.ds == list( ba(i) for i in [200,201,202])
-
-    assert db[:] == bytearray([100,13,14,20,200,30,201,40,202,50])
-
-
-@test
-def test_multibyte_field():
-    db = make_db2()
-
-    assert db.a == [ba(0,1,2)]
-    assert db.b == [ba(3,4)]
-
-    assert db.cs == [ba(5,6),ba(10,11), ba(15,16)]
-    assert db.ds == [ba(7,8,9), ba(12,13,14), ba(17,18,19)]
-
-    db.cs[0] = ba(20,20)
-    assert db.cs == [ba(20,20),ba(10,11), ba(15,16)]
-    
-@test
-def test_multibyte_field_setitem():
-    db = make_db2()
-
-    expected = list(range(20))
-    assert db[:] == bytearray(expected)
-    
-    assert db.a == [ba(0,1,2)]
-    assert db.b == [ba(3,4)]
-    
-    db.a = [ba(2,1,0)]
-    expected[0:3] = [2,1,0]
-    assert db[:] == bytearray(expected)
-
-    db.b = [ba(30,40)]
-    expected[3:5] = [30,40]
-    assert db[:] == bytearray(expected)
-    
-    assert db.a == [ba(2,1,0)]
-    assert db.b == [ba(30,40)]
-
-    db.cs = [ba(50,60), ba(100,110), ba(150,160)]
-    expected[5:7] = [50,60]
-    expected[10:12] = [100,110]
-    expected[15:17] = [150,160]
-    assert db[:] == bytearray(expected)
-    
-    db.ds = [ba(0,0,0), ba(1,1,1),ba(2,2,2)]
-    expected[7:10] = [0,0,0]
-    expected[12:15] = [1,1,1]
-    expected[17:20] = [2,2,2]
-    assert db[:] == bytearray(expected)
-    
-    assert db.cs == [ba(50,60), ba(100,110), ba(150,160)]
-    assert db.ds == [ba(0,0,0), ba(1,1,1), ba(2,2,2)]
-
-
-if __name__ == '__main__':
-    run_tests(print_summary_only=False, new_suppress_test_output=True)
-    print(test_summary())

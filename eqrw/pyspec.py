@@ -262,7 +262,7 @@ def make_z3sort_expression(z3sort):
 
     Z3SortExpression.mk_atoms = mk_atoms
 
-    def mk_BinOp(opname, op_order=op_order.Noop, is_left_assoc=True, symbol=None):
+    def mk_BinOp(onm, op_order=op_order.Noop, is_left_assoc=True, symbol=None):
         '''Creates a subclass of Expression. The expression is a an operator and 2 arguments.'''
 
     
@@ -271,7 +271,8 @@ def make_z3sort_expression(z3sort):
             prec = op_order
             assoc_left = is_left_assoc
             op = symbol
-            z3Func = z3.Function(f'z3_{opname}', z3sort, z3sort, z3sort)
+            opname = onm
+            z3Func = z3.Function(f'z3_{onm}', z3sort, z3sort, z3sort)
             
             def __init__(self, *args):
                 super().__init__(*args)
@@ -280,7 +281,7 @@ def make_z3sort_expression(z3sort):
                 except Exception:
                     raise TypeError(f'Arguments of {self.op} have incompatible sorts: {args[0].z3Expr.sort()} and {args[1].z3Expr.sort()}') from None
                 
-        return type(f'{sortname}_{opname}', (BinOpBase,), {})
+        return type(f'{sortname}_{onm}', (BinOpBase,), {})
 
     def mk_CmpOp(opname, op_order=op_order.Noop, is_left_assoc=True, symbol=None):
         '''Creates a subclass of Expression. The expression is a a comparison operator and 2 arguments.'''
@@ -307,19 +308,19 @@ def make_z3sort_expression(z3sort):
                 
         return type(f'{sortname}_{opname}', (CmpOpBase,), {})
     
-    Mul = mk_BinOp(opname='Mul', op_order=op_order.Mul, is_left_assoc=True, symbol='*')
-    MatMul = mk_BinOp(opname='MatMul', op_order=op_order.MatMul, is_left_assoc=True,symbol='@')
-    TrueDiv = mk_BinOp(opname='TrueDiv', op_order=op_order.TrueDiv, is_left_assoc=True,symbol='/')
-    FloorDiv = mk_BinOp(opname='FloorDiv', op_order=op_order.FloorDiv, is_left_assoc=True,symbol='//')
-    Mod = mk_BinOp(opname='Mod', op_order=op_order.Mod, is_left_assoc=True,symbol='%')
+    Mul = mk_BinOp(onm='Mul', op_order=op_order.Mul, is_left_assoc=True, symbol='*')
+    MatMul = mk_BinOp(onm='MatMul', op_order=op_order.MatMul, is_left_assoc=True,symbol='@')
+    TrueDiv = mk_BinOp(onm='TrueDiv', op_order=op_order.TrueDiv, is_left_assoc=True,symbol='/')
+    FloorDiv = mk_BinOp(onm='FloorDiv', op_order=op_order.FloorDiv, is_left_assoc=True,symbol='//')
+    Mod = mk_BinOp(onm='Mod', op_order=op_order.Mod, is_left_assoc=True,symbol='%')
 
-    Add = mk_BinOp(opname='Add', op_order=op_order.Add, is_left_assoc=True,symbol='+')
-    Sub = mk_BinOp(opname='Sub', op_order=op_order.Sub, is_left_assoc=True,symbol='-')
+    Add = mk_BinOp(onm='Add', op_order=op_order.Add, is_left_assoc=True,symbol='+')
+    Sub = mk_BinOp(onm='Sub', op_order=op_order.Sub, is_left_assoc=True,symbol='-')
 
-    Pow = mk_BinOp(opname='Pow', op_order=op_order.Pow, is_left_assoc=False,symbol='**')
+    Pow = mk_BinOp(onm='Pow', op_order=op_order.Pow, is_left_assoc=False,symbol='**')
 
-    LShift = mk_BinOp(opname='LShift', op_order=op_order.LShift, is_left_assoc=True,symbol='<<')
-    RShift = mk_BinOp(opname='RShift', op_order=op_order.RShift, is_left_assoc=True,symbol='>>')
+    LShift = mk_BinOp(onm='LShift', op_order=op_order.LShift, is_left_assoc=True,symbol='<<')
+    RShift = mk_BinOp(onm='RShift', op_order=op_order.RShift, is_left_assoc=True,symbol='>>')
 
     LT = mk_CmpOp(opname='LT', op_order=op_order.LT, is_left_assoc=True,symbol='<')
     LE = mk_CmpOp(opname='LE', op_order=op_order.LE, is_left_assoc=True,symbol='<=')
@@ -328,9 +329,9 @@ def make_z3sort_expression(z3sort):
     GE = mk_CmpOp(opname='GE', op_order=op_order.GE, is_left_assoc=True,symbol='>=')
     GT = mk_CmpOp(opname='GT', op_order=op_order.GT, is_left_assoc=True,symbol='>')
 
-    BAnd = mk_BinOp(opname='BAnd', op_order=op_order.BAnd, is_left_assoc=True,symbol='&')
-    BXor = mk_BinOp(opname='BXor', op_order=op_order.BXor, is_left_assoc=True,symbol='^')
-    BOr = mk_BinOp(opname='BOr', op_order=op_order.BOr, is_left_assoc=True,symbol='|')
+    BAnd = mk_BinOp(onm='BAnd', op_order=op_order.BAnd, is_left_assoc=True,symbol='&')
+    BXor = mk_BinOp(onm='BXor', op_order=op_order.BXor, is_left_assoc=True,symbol='^')
+    BOr = mk_BinOp(onm='BOr', op_order=op_order.BOr, is_left_assoc=True,symbol='|')
 
 
     class Function(Z3SortExpression):
