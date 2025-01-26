@@ -3,13 +3,13 @@ module Lib
       ByteString,
       showCRC,
       computeCRC
-      
+
     ) where
 
 import qualified Data.ByteString.Lazy as B
-import Data.Bits
 --import Data.Int
 import Data.Word
+import Numeric (showHex)
 
 type ByteString = B.ByteString
 
@@ -20,19 +20,13 @@ type ByteString = B.ByteString
 -- The strict pair data type
 data CRC = CRC !Word8 !Word8 deriving (Show, Eq)
 
-hexDigits :: Word8 -> String
-hexDigits n = (hexd ((n `shiftR` 4))) : (hexd n) : ""
-  where
-    hexd h = "0123456789ABCDEF" !! (fromIntegral (h .&. 0xF))
-
-
 showCRC :: CRC -> String
-showCRC (CRC crc0 crc1) = (hexDigits crc0) ++ " " ++ (hexDigits crc1)
-  
+showCRC (CRC crc0 crc1) = showHex crc0 " " ++ showHex crc1 ""
+
 -- This is the CRC computation using the strict pair data type CRC as
 -- well as foldl' which is strict in its accumulator
 computeCRC :: ByteString -> CRC
-computeCRC bs = b_foldl fcrc (CRC 0 0) bs
+computeCRC = b_foldl fcrc (CRC 0 0)
   where b_foldl = B.foldl'
         fcrc :: CRC -> Word8 -> CRC
         fcrc (CRC crc0 crc1) b = let crc0' = crc0 + b
