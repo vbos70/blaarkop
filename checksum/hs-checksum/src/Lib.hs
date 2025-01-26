@@ -32,8 +32,8 @@ showCRC (CRC crc0 crc1) = (hexDigits crc0) ++ " " ++ (hexDigits crc1)
 -- This is the CRC computation using the strict pair data type CRC as
 -- well as foldl' which is strict in its accumulator
 computeCRC :: ByteString -> CRC
-computeCRC bs = foldl fcrc (CRC 0 0) bs
-  where foldl = B.foldl'
+computeCRC bs = b_foldl fcrc (CRC 0 0) bs
+  where b_foldl = B.foldl'
         fcrc :: CRC -> Word8 -> CRC
         fcrc (CRC crc0 crc1) b = let crc0' = crc0 + b
                                  in CRC crc0' (crc1 + crc0')

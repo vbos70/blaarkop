@@ -4,7 +4,7 @@ github:              "vbos70/blaarkop"
 license:             BSD3
 author:              "Victor Bos"
 maintainer:          "victor.bos@gmail.com"
-copyright:           "2021 Victor Bos"
+copyright:           "2021-2025 Victor Bos"
 
 extra-source-files:
 - README.md
@@ -22,6 +22,17 @@ description:         Please see the README on GitHub at <https://github.com/vbos
 dependencies:
 - base >= 4.7 && < 5
 
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
 library:
   source-dirs: src
   dependencies:
@@ -35,11 +46,10 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
-    - -O2
     dependencies:
     - hs-checksum
     - bytestring
-    
+
 tests:
   hs-checksum-test:
     main:                Spec.hs
