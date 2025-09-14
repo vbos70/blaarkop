@@ -31,7 +31,7 @@ class LFSR:
     # shift:  result = state[0], state := state[1:] + [xor(state[1], state[2], state[4]]   
     def __next__(self):
 
-        v = reduce(xor, [self.state[i] for i in self.output_indices])
+        v = reduce(xor, (self.state[i] for i in self.output_indices))
         self.state = self.state[1:] + [reduce(xor, self.taps())]
         return v
 
@@ -40,14 +40,11 @@ class LFSR:
 
     def __iter__(self):
         return self
-        #c = LFSR(initstate=self.state, coeffs=self.coeffs, output=self.output)
-        #return c
-
 
 
 def demo_shift(s: LFSR):
-    print(f'state:    {s.state}')
-    print(f'indices:  {s.tap_indices}')
+    print(f'state:    {"".join(f"{i:3}" for i in s.state)}')
+    print(f'indices:  {"".join(i for i in [f"{i:3}" if i in s.coeffs else "  ." for i in range(len(s.state))])}')
 
     taps = [s.state[i] for i in s.tap_indices]
     feedback = reduce(xor, taps)
